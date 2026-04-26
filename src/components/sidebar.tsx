@@ -3,8 +3,8 @@
 import { useState, useEffect } from "react";
 import Image from "next/image";
 import Link from "next/link";
-import { usePathname } from "next/navigation";
-import { Tooltip, Avatar } from "@heroui/react";
+import { usePathname, useRouter } from "next/navigation";
+import { Tooltip, Avatar, Dropdown, Label } from "@heroui/react";
 import { createClient } from "@/lib/supabase/client";
 import { 
   MapIcon, 
@@ -14,7 +14,8 @@ import {
   TrophyIcon,
   ChevronLeftIcon,
   ChevronRightIcon,
-  UserIcon
+  UserIcon,
+  ArrowRightEndOnRectangleIcon
 } from "@heroicons/react/24/outline";
 
 const navItems = [
@@ -60,6 +61,20 @@ export function Sidebar() {
       }
     });
   }, []);
+
+  const router = useRouter();
+
+  const handleDropdownAction = async (key: string | number) => {
+    if (key === "logout") {
+      const supabase = createClient();
+      await supabase.auth.signOut();
+      setUserEmail(null);
+      setUserName(null);
+      router.push("/");
+    } else if (key === "profile") {
+      router.push("/profile");
+    }
+  };
 
   return (
     <aside 
@@ -140,35 +155,62 @@ export function Sidebar() {
       </nav>
 
       <div className="flex md:flex-col p-1 md:p-3 md:border-t border-default-200 justify-center items-center md:gap-2 mr-1 md:mr-0 shrink-0">
-        <Link href={userEmail ? "#" : "/auth/login"} className="w-auto md:w-full">
-          <Tooltip delay={300}>
-            <Tooltip.Trigger>
-              <div tabIndex={0} className="p-2 rounded-xl md:rounded-lg text-default-500 hover:bg-default-100 transition-colors w-10 h-10 md:w-full md:h-auto mx-auto flex justify-center cursor-pointer items-center">
-                {userEmail ? (
+          {userEmail ? (
+            <Dropdown>
+              <Dropdown.Trigger>
+                <div tabIndex={0} className="p-2 rounded-xl md:rounded-lg text-default-500 hover:bg-default-100 transition-colors w-10 h-10 md:w-full md:h-auto mx-auto flex justify-center cursor-pointer items-center">
                   <Avatar size="sm">
                     <Avatar.Fallback>{(userName || userEmail).charAt(0).toUpperCase()}</Avatar.Fallback>
                   </Avatar>
-                ) : (
-                  <Avatar size="sm" className="bg-default-200">
-                    <Avatar.Fallback>
-                      <UserIcon className="w-4 h-4" />
-                    </Avatar.Fallback>
-                  </Avatar>
+                  {!isCollapsed && (
+                    <span className="hidden md:block ml-3 truncate text-sm">
+                      {userName || userEmail}
+                    </span>
+                  )}
+                </div>
+              </Dropdown.Trigger>
+              <Dropdown.Popover placement="right" className="min-w-50 mb-2 md:mb-0">
+                <Dropdown.Menu aria-label="User menu" onAction={(key) => handleDropdownAction(key)}>
+                  <Dropdown.Item id="profile" textValue="Hồ sơ">
+                    <div className="flex justify-between items-center w-full">
+                      <span>Hồ sơ</span>
+                      <UserIcon className="w-4 h-4 ml-2" />
+                    </div>
+                  </Dropdown.Item>
+                  <Dropdown.Item id="logout" textValue="Đăng xuất" variant="danger">
+                    <div className="flex justify-between items-center w-full">
+                      <span>Đăng xuất</span>
+                    <ArrowRightEndOnRectangleIcon className="w-4 h-4 ml-2" />
+                    </div>
+                  </Dropdown.Item>
+                </Dropdown.Menu>
+              </Dropdown.Popover>
+            </Dropdown>
+          ) : (
+            <Link href="/auth/login" className="w-auto md:w-full">
+              <Tooltip delay={300}>
+                <Tooltip.Trigger>
+                  <div tabIndex={0} className="p-2 rounded-xl md:rounded-lg text-default-500 hover:bg-default-100 transition-colors w-10 h-10 md:w-full md:h-auto mx-auto flex justify-center cursor-pointer items-center">
+                    <Avatar size="sm" className="bg-default-200">
+                      <Avatar.Fallback>
+                        <UserIcon className="w-4 h-4" />
+                      </Avatar.Fallback>
+                    </Avatar>
+                    {!isCollapsed && (
+                      <span className="hidden md:block ml-3 truncate text-sm">
+                        Đăng nhập
+                      </span>
+                    )}
+                  </div>
+                </Tooltip.Trigger>
+                {isCollapsed && (
+                  <Tooltip.Content placement="right" className="bg-surface text-foreground shadow-lg border border-default-200 font-medium px-3 py-1.5 rounded-lg text-sm ml-2">
+                    Đăng nhập
+                  </Tooltip.Content>
                 )}
-                {!isCollapsed && (
-                  <span className="hidden md:block ml-3 truncate text-sm">
-                    {userEmail ? (userName || userEmail) : "Đăng nhập"}
-                  </span>
-                )}
-              </div>
-            </Tooltip.Trigger>
-            {isCollapsed && (
-              <Tooltip.Content placement="right" className="bg-surface text-foreground shadow-lg border border-default-200 font-medium px-3 py-1.5 rounded-lg text-sm ml-2">
-                {userEmail ? `Chào mừng ${userName || userEmail}` : "Đăng nhập"}
-              </Tooltip.Content>
-            )}
-          </Tooltip>
-        </Link>
+              </Tooltip>
+            </Link>
+          )}
         <button
           onClick={() => setIsCollapsed(!isCollapsed)}
           className="hidden md:flex p-2 rounded-lg text-default-500 hover:bg-default-100 transition-colors w-full justify-center items-center"
