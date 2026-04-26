@@ -307,7 +307,7 @@ export default function ScanPage() {
 
         {/* Right column — AI result (appears when result exists) */}
         {result && (
-          <aside className="w-full lg:w-[480px] lg:min-w-[400px] h-auto lg:h-full overflow-y-auto border-t lg:border-t-0 lg:border-l border-default-200 bg-default-50 p-4 sm:p-6">
+          <aside className="w-full lg:w-120 lg:min-w-100 h-auto lg:h-full overflow-y-auto border-t lg:border-t-0 lg:border-l border-default-200 bg-default-50 p-4 sm:p-6">
             <Card variant="secondary">
               <Card.Header className="pb-2">
                 <Card.Title className="flex items-center gap-2 text-base">
