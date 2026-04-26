@@ -49,18 +49,34 @@ const navItems = [
 export function Sidebar() {
   const pathname = usePathname();
   const [isCollapsed, setIsCollapsed] = useState(true);
+  const [userId, setUserId] = useState<string | null>(null);
   const [userEmail, setUserEmail] = useState<string | null>(null);
   const [userName, setUserName] = useState<string | null>(null);
+  const [avatarVersion, setAvatarVersion] = useState<number>(Date.now());
 
   useEffect(() => {
     const supabase = createClient();
     supabase.auth.getUser().then(({ data }) => {
       if (data?.user) {
+        setUserId(data.user.id);
         setUserEmail(data.user.email ?? null);
         setUserName(data.user.user_metadata?.display_name ?? null);
       }
     });
+
+    const handleAvatarUpdate = () => {
+      setAvatarVersion(Date.now());
+    };
+    window.addEventListener("avatarUpdated", handleAvatarUpdate);
+
+    return () => {
+      window.removeEventListener("avatarUpdated", handleAvatarUpdate);
+    };
   }, []);
+
+  const avatarUrl = userId 
+    ? `/api/avatar/${userId}?v=${avatarVersion}` 
+    : null;
 
   const router = useRouter();
 
@@ -159,7 +175,8 @@ export function Sidebar() {
             <Dropdown>
               <Dropdown.Trigger>
                 <div tabIndex={0} className="p-2 rounded-xl md:rounded-lg text-default-500 hover:bg-default-100 transition-colors w-10 h-10 md:w-full md:h-auto mx-auto flex justify-center cursor-pointer items-center">
-                  <Avatar size="sm">
+                  <Avatar size="sm" className="border border-default-200">
+                    {avatarUrl && <Avatar.Image src={avatarUrl} alt="User Avatar" className="object-cover" />}
                     <Avatar.Fallback>{(userName || userEmail).charAt(0).toUpperCase()}</Avatar.Fallback>
                   </Avatar>
                   {!isCollapsed && (
