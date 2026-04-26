@@ -8,6 +8,7 @@
     "start": "next start"
   },
   "dependencies": {
+    "@heroicons/react": "^2.2.0",
     "@heroui/react": "^3.0.3",
     "@heroui/styles": "^3.0.3",
     "@supabase/ssr": "^0.10.2",
