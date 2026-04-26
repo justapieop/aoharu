@@ -16,7 +16,7 @@ export async function login(formData: FormData) {
   });
 
   if (error) {
-    return redirect("/auth?error=" + encodeURIComponent(error.message));
+    return redirect("/auth/login?error=" + encodeURIComponent(error.message));
   }
 
   revalidatePath("/", "layout");
@@ -26,18 +26,24 @@ export async function login(formData: FormData) {
 export async function signup(formData: FormData) {
   const supabase = await createClient();
 
+  const name = formData.get("name") as string;
   const email = formData.get("email") as string;
   const password = formData.get("password") as string;
 
   const { error } = await supabase.auth.signUp({
     email,
     password,
+    options: {
+      data: {
+        display_name: name,
+      }
+    }
   });
 
   if (error) {
-    return redirect("/auth?error=" + encodeURIComponent(error.message));
+    return redirect("/auth/register?error=" + encodeURIComponent(error.message));
   }
 
   revalidatePath("/", "layout");
-  redirect("/?message=Check your email to continue sign in process");
+  redirect("/auth/login?message=Check your email to continue sign in process");
 }

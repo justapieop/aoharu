@@ -1,10 +1,11 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import Image from "next/image";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { Tooltip } from "@heroui/react";
+import { Tooltip, Avatar } from "@heroui/react";
+import { createClient } from "@/lib/supabase/client";
 import { 
   MapIcon, 
   ViewfinderCircleIcon, 
@@ -12,7 +13,8 @@ import {
   FireIcon, 
   TrophyIcon,
   ChevronLeftIcon,
-  ChevronRightIcon
+  ChevronRightIcon,
+  UserIcon
 } from "@heroicons/react/24/outline";
 
 const navItems = [
@@ -46,6 +48,18 @@ const navItems = [
 export function Sidebar() {
   const pathname = usePathname();
   const [isCollapsed, setIsCollapsed] = useState(true);
+  const [userEmail, setUserEmail] = useState<string | null>(null);
+  const [userName, setUserName] = useState<string | null>(null);
+
+  useEffect(() => {
+    const supabase = createClient();
+    supabase.auth.getUser().then(({ data }) => {
+      if (data?.user) {
+        setUserEmail(data.user.email ?? null);
+        setUserName(data.user.user_metadata?.display_name ?? null);
+      }
+    });
+  }, []);
 
   return (
     <aside 
@@ -64,8 +78,7 @@ export function Sidebar() {
           alt="BandoXanh Logo"
           width={32}
           height={32}
-          className="rounded-lg shrink-0"
-          style={{ width: "auto", height: "auto" }}
+          className="rounded-lg shrink-0 w-auto h-auto"
         />
         {!isCollapsed && (
           <span className="font-bold text-xl text-accent tracking-wide ml-3 whitespace-nowrap">
@@ -74,7 +87,7 @@ export function Sidebar() {
         )}
       </Link>
 
-      <nav className={`flex-1 flex flex-row md:flex-col justify-center items-center md:gap-1.5 md:py-4 overflow-hidden px-2 md:px-3`}>
+      <nav className={`flex-1 w-full md:w-auto flex flex-row md:flex-col justify-around md:justify-center items-center md:gap-1.5 md:py-4 px-1 md:px-3`}>
         {navItems.map((item) => {
           const isActive = pathname === item.href;
           const Icon = item.icon;
@@ -102,7 +115,7 @@ export function Sidebar() {
           );
 
           return (
-            <div key={item.href} className="w-full flex justify-center">
+            <div key={item.href} className="w-auto md:w-full flex justify-center">
               {isCollapsed ? (
                 <div className="hidden md:block">
                   <Tooltip delay={300}>
@@ -126,10 +139,39 @@ export function Sidebar() {
         })}
       </nav>
 
-      <div className="hidden md:flex p-3 border-t border-default-200 justify-center">
+      <div className="flex md:flex-col p-1 md:p-3 md:border-t border-default-200 justify-center items-center md:gap-2 mr-1 md:mr-0 shrink-0">
+        <Link href={userEmail ? "#" : "/auth/login"} className="w-auto md:w-full">
+          <Tooltip delay={300}>
+            <Tooltip.Trigger>
+              <div tabIndex={0} className="p-2 rounded-xl md:rounded-lg text-default-500 hover:bg-default-100 transition-colors w-10 h-10 md:w-full md:h-auto mx-auto flex justify-center cursor-pointer items-center">
+                {userEmail ? (
+                  <Avatar size="sm">
+                    <Avatar.Fallback>{(userName || userEmail).charAt(0).toUpperCase()}</Avatar.Fallback>
+                  </Avatar>
+                ) : (
+                  <Avatar size="sm" className="bg-default-200">
+                    <Avatar.Fallback>
+                      <UserIcon className="w-4 h-4" />
+                    </Avatar.Fallback>
+                  </Avatar>
+                )}
+                {!isCollapsed && (
+                  <span className="hidden md:block ml-3 truncate text-sm">
+                    {userEmail ? (userName || userEmail) : "Đăng nhập"}
+                  </span>
+                )}
+              </div>
+            </Tooltip.Trigger>
+            {isCollapsed && (
+              <Tooltip.Content placement="right" className="bg-surface text-foreground shadow-lg border border-default-200 font-medium px-3 py-1.5 rounded-lg text-sm ml-2">
+                {userEmail ? `Chào mừng ${userName || userEmail}` : "Đăng nhập"}
+              </Tooltip.Content>
+            )}
+          </Tooltip>
+        </Link>
         <button
           onClick={() => setIsCollapsed(!isCollapsed)}
-          className="p-2 rounded-lg text-default-500 hover:bg-default-100 transition-colors w-full flex justify-center"
+          className="hidden md:flex p-2 rounded-lg text-default-500 hover:bg-default-100 transition-colors w-full justify-center items-center"
           title={isCollapsed ? "Mở rộng (Expand)" : "Thu gọn (Collapse)"}
         >
           {isCollapsed ? (
