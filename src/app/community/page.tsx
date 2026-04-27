@@ -65,13 +65,13 @@ export default async function CommunityPage() {
         }
       }
 
-      // Check if the current user has reacted to this post (EXISTS-style)
-      const { data: reactionRow } = await supabase
+      // Check if the current user has reacted to this post.
+      const { data: reactionRows } = await supabase
         .from("post_reactions")
         .select("post_id")
         .eq("post_id", post.id)
         .eq("user_id", user.id)
-        .maybeSingle();
+        .limit(1);
 
       // Get total reaction count
       const { count: reactionCount } = await supabase
@@ -88,7 +88,7 @@ export default async function CommunityPage() {
         author_avatar_url: `/api/avatar/${post.posted_by}`,
         author_fallback: authorName.charAt(0).toUpperCase() || "U",
         attachments,
-        liked: !!reactionRow,
+        liked: (reactionRows?.length ?? 0) > 0,
         reactionCount: reactionCount ?? 0,
       };
     })

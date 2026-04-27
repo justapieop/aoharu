@@ -94,8 +94,6 @@ export function CreatePostBar({ userId, displayName, avatarFallback }: CreatePos
               <Modal.Heading>Tạo bài viết</Modal.Heading>
             </Modal.Header>
 
-            <Separator />
-
             <Modal.Body className="p-4 flex flex-col gap-4">
               <div className="flex items-center gap-3">
                 <Avatar size="sm" className="shrink-0">

@@ -52,11 +52,18 @@ export function PostCard({ post }: { post: PostData }) {
   );
 
   function handleToggle() {
-    const newLiked = !optimistic.liked;
+    const previousLiked = optimistic.liked;
+    const newLiked = !previousLiked;
 
     startTransition(async () => {
       setOptimistic(newLiked);
-      await toggleReactionAction(post.id);
+
+      const result = await toggleReactionAction(post.id);
+      if (!result?.success) {
+        // Roll back optimistic state when the server write fails.
+        setOptimistic(previousLiked);
+        console.error("Failed to toggle reaction:", result?.error || "Unknown error");
+      }
     });
   }
 
@@ -111,7 +118,7 @@ export function PostCard({ post }: { post: PostData }) {
           aria-label="Like"
           isSelected={optimistic.liked}
           isDisabled={isPending}
-          onChange={handleToggle}
+          onPress={handleToggle}
           className="data-[selected=true]:text-danger"
         >
           {optimistic.liked ? (

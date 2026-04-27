@@ -1,6 +1,7 @@
 "use server";
 
 import { createClient } from "@/lib/supabase/server";
+import { revalidatePath } from "next/cache";
 
 export async function toggleReactionAction(postId: string) {
   const supabase = await createClient();
@@ -13,19 +14,25 @@ export async function toggleReactionAction(postId: string) {
     return { success: false, error: "Bạn chưa đăng nhập." };
   }
 
-  // Check if user already reacted (EXISTS-style: select a single row or null)
-  const { data: existing } = await supabase
+  // Check if user already reacted without assuming uniqueness.
+  const { data: existingRows, error: existingError } = await supabase
     .from("post_reactions")
     .select("post_id")
     .eq("post_id", postId)
     .eq("user_id", user.id)
-    .maybeSingle();
+    .limit(1);
 
-  if (existing) {
+  if (existingError) {
+    return { success: false, error: existingError.message };
+  }
+
+  const hasExistingReaction = (existingRows?.length ?? 0) > 0;
+
+  if (hasExistingReaction) {
     // Already liked → remove reaction
-    const { error: deleteError } = await supabase
+    const { error: deleteError, count: deletedCount } = await supabase
       .from("post_reactions")
-      .delete()
+      .delete({ count: "exact" })
       .eq("post_id", postId)
       .eq("user_id", user.id);
 
@@ -33,17 +40,26 @@ export async function toggleReactionAction(postId: string) {
       return { success: false, error: deleteError.message };
     }
 
+    if ((deletedCount ?? 0) === 0) {
+      return { success: false, error: "Không thể bỏ reaction. Vui lòng kiểm tra RLS policy cho DELETE trên post_reactions." };
+    }
+
+    revalidatePath("/community");
     return { success: true, liked: false };
   } else {
     // Not liked → insert reaction
     const { error: insertError } = await supabase
       .from("post_reactions")
-      .insert({ post_id: postId, user_id: user.id });
+      .upsert(
+        { post_id: postId, user_id: user.id },
+        { onConflict: "post_id,user_id", ignoreDuplicates: true }
+      );
 
     if (insertError) {
       return { success: false, error: insertError.message };
     }
 
+    revalidatePath("/community");
     return { success: true, liked: true };
   }
 }
