@@ -8,7 +8,6 @@ export async function uploadAvatarAction(formData: FormData) {
     return { success: false, error: "Không tìm thấy tệp." };
   }
 
-  // Enforce 5MB limit strictly (5 * 1024 * 1024 bytes)
   const MAX_SIZE = 5 * 1024 * 1024;
   if (file.size > MAX_SIZE) {
     return { success: false, error: "Tệp tải lên không được vượt quá 5MB. Vui lòng chọn tệp nhỏ hơn." };
@@ -22,23 +21,42 @@ export async function uploadAvatarAction(formData: FormData) {
   }
 
   try {
-    // Generate Buffer from the raw file bytes
-    const arrayBuffer = await file.arrayBuffer();
-    const buffer = Buffer.from(arrayBuffer);
+    const storagePath = `${user.id}/${file.name}`;
 
-    // Convert Buffer to postgres standard HEX bytea mapping (`\xDEADBEEF...`)
-    const hexString = '\\x' + buffer.toString('hex');
+    const { error: uploadError } = await supabase.storage
+      .from("avatars")
+      .upload(storagePath, file, {
+        upsert: true,
+      });
 
-    // Execute standard UPDATE on the `profiles` table to respect RLS UPDATE policy
-    const { error: dbError } = await supabase
-      .from("profiles")
-      .update({
-        avatar: hexString
+    if (uploadError) {
+      throw uploadError;
+    }
+
+    const { data: fileRecord, error: fileInsertError } = await supabase
+      .from("files")
+      .insert({
+        name: file.name,
+        uploaded_by: user.id,
+        mime_type: file.type,
+        bucket_name: "avatars",
+        path: `/${user.id}/`,
       })
+      .select("id")
+      .single();
+
+    if (fileInsertError) {
+      await supabase.storage.from("avatars").remove([storagePath]);
+      throw fileInsertError;
+    }
+
+    const { error: profileError } = await supabase
+      .from("profiles")
+      .update({ avatar: fileRecord.id })
       .eq("id", user.id);
 
-    if (dbError) {
-      throw dbError;
+    if (profileError) {
+      throw profileError;
     }
 
     return { success: true };

@@ -14,37 +14,47 @@ export async function GET(
   }
 
   const supabase = await createClient();
-  
-  // Directly pull the bytea output from Postgres natively
-  const { data, error } = await supabase
+
+  // Look up the file UUID stored in profiles.avatar
+  const { data: profile, error: profileError } = await supabase
     .from("profiles")
     .select("avatar")
     .eq("id", userId)
     .single();
 
-  if (error || !data || !data.avatar) {
+  if (profileError || !profile || !profile.avatar) {
     return new NextResponse("Not Found", { status: 404 });
   }
 
-  try {
-    let buffer: Buffer;
-    
-    // Supabase PostgREST maps bytea dynamically to standard hex format '\\xDEAD...`
-    if (typeof data.avatar === 'string' && data.avatar.startsWith('\\x')) {
-      buffer = Buffer.from(data.avatar.slice(2), 'hex');
-    } else {
-      // Fallback format execution handler
-      buffer = Buffer.from(data.avatar, 'base64'); 
-    }
+  // Fetch file metadata from the "files" table using the UUID
+  const { data: fileRecord, error: fileError } = await supabase
+    .from("files")
+    .select("name, bucket_name, path, mime_type")
+    .eq("id", profile.avatar)
+    .single();
 
-    return new NextResponse(new Uint8Array(buffer), {
-      headers: {
-        "Content-Type": "image/jpeg", 
-        // Allow clients to cache strictly but utilize 'must-revalidate' behavior when we append custom ?v= timestamps
-        "Cache-Control": "public, max-age=31536000",
-      },
-    });
-  } catch (err) {
-    return new NextResponse("Invalid avatar encoding", { status: 500 });
+  if (fileError || !fileRecord) {
+    return new NextResponse("File record not found", { status: 404 });
   }
+
+  // Download the file from Supabase Storage
+  // Path in bucket is /{user's id}/{filename}
+  const storagePath = `${userId}/${fileRecord.name}`;
+  const { data: fileData, error: downloadError } = await supabase.storage
+    .from(fileRecord.bucket_name)
+    .download(storagePath);
+
+  if (downloadError || !fileData) {
+    return new NextResponse("File download failed", { status: 500 });
+  }
+
+  const arrayBuffer = await fileData.arrayBuffer();
+
+  return new NextResponse(new Uint8Array(arrayBuffer), {
+    headers: {
+      "Content-Type": fileRecord.mime_type || "image/jpeg",
+      // Allow clients to cache strictly but utilize 'must-revalidate' behavior when we append custom ?v= timestamps
+      "Cache-Control": "public, max-age=31536000",
+    },
+  });
 }
