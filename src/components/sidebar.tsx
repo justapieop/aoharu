@@ -12,7 +12,6 @@ import {
   ViewfinderCircleIcon, 
   UserGroupIcon, 
   FireIcon, 
-  TrophyIcon,
   ChevronLeftIcon,
   ChevronRightIcon,
   UserIcon,
