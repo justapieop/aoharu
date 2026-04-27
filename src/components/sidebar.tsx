@@ -38,11 +38,6 @@ const navItems = [
     name: "Thử thách",
     href: "/challenges",
     icon: FireIcon
-  },
-  {
-    name: "BXH",
-    href: "/leaderboard",
-    icon: TrophyIcon
   }
 ];
 
@@ -190,13 +185,13 @@ export function Sidebar() {
                 <Dropdown.Menu aria-label="User menu" onAction={(key) => handleDropdownAction(key)}>
                   <Dropdown.Item id="profile" textValue="Hồ sơ">
                     <div className="flex justify-between items-center w-full">
-                      <span>Hồ sơ</span>
+                    <Label>Hồ sơ</Label>
                       <UserIcon className="w-4 h-4 ml-2" />
                     </div>
                   </Dropdown.Item>
                   <Dropdown.Item id="logout" textValue="Đăng xuất" variant="danger">
                     <div className="flex justify-between items-center w-full">
-                      <span>Đăng xuất</span>
+                      <Label>Đăng xuất</Label>
                     <ArrowRightEndOnRectangleIcon className="w-4 h-4 ml-2" />
                     </div>
                   </Dropdown.Item>
