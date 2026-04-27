@@ -8,6 +8,7 @@ import { Tooltip, Avatar, Dropdown, Label } from "@heroui/react";
 import { createClient } from "@/lib/supabase/client";
 import { 
   MapIcon, 
+  ShieldCheckIcon,
   ViewfinderCircleIcon, 
   UserGroupIcon, 
   FireIcon, 
@@ -47,16 +48,31 @@ export function Sidebar() {
   const [userId, setUserId] = useState<string | null>(null);
   const [userEmail, setUserEmail] = useState<string | null>(null);
   const [userName, setUserName] = useState<string | null>(null);
+  const [isAdmin, setIsAdmin] = useState(false);
   const [avatarVersion, setAvatarVersion] = useState<number>(Date.now());
 
   useEffect(() => {
     const supabase = createClient();
-    supabase.auth.getUser().then(({ data }) => {
-      if (data?.user) {
-        setUserId(data.user.id);
-        setUserEmail(data.user.email ?? null);
-        setUserName(data.user.user_metadata?.display_name ?? null);
+    supabase.auth.getUser().then(async ({ data }) => {
+      if (!data?.user) {
+        setUserId(null);
+        setUserEmail(null);
+        setUserName(null);
+        setIsAdmin(false);
+        return;
       }
+
+      setUserId(data.user.id);
+      setUserEmail(data.user.email ?? null);
+      setUserName(data.user.user_metadata?.display_name ?? null);
+
+      const { data: profile } = await supabase
+        .from("profiles")
+        .select("admin")
+        .eq("id", data.user.id)
+        .maybeSingle();
+
+      setIsAdmin(profile?.admin === true);
     });
 
     const handleAvatarUpdate = () => {
@@ -81,9 +97,13 @@ export function Sidebar() {
       await supabase.auth.signOut();
       setUserEmail(null);
       setUserName(null);
+      setUserId(null);
+      setIsAdmin(false);
       router.push("/");
     } else if (key === "profile") {
       router.push("/profile");
+    } else if (key === "admin") {
+      router.push("/admin");
     }
   };
 
@@ -189,6 +209,14 @@ export function Sidebar() {
                       <UserIcon className="w-4 h-4 ml-2" />
                     </div>
                   </Dropdown.Item>
+                  {isAdmin && (
+                    <Dropdown.Item id="admin" textValue="Admin Panel">
+                      <div className="flex justify-between items-center w-full">
+                        <Label>Truy cập khu vực cho quản trị viên</Label>
+                        <ShieldCheckIcon className="w-4 h-4 ml-2" />
+                      </div>
+                    </Dropdown.Item>
+                  )}
                   <Dropdown.Item id="logout" textValue="Đăng xuất" variant="danger">
                     <div className="flex justify-between items-center w-full">
                       <Label>Đăng xuất</Label>
