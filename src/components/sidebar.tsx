@@ -194,9 +194,16 @@ export function Sidebar() {
                     <Avatar.Fallback>{(userName || userEmail).charAt(0).toUpperCase()}</Avatar.Fallback>
                   </Avatar>
                   {!isCollapsed && (
-                    <span className="hidden md:block ml-3 truncate text-sm text-white/90">
-                      {userName || userEmail}
-                    </span>
+                    <div className="hidden md:flex ml-3 items-center gap-2 min-w-0">
+                      <span className="truncate text-sm text-white/90">
+                        {userName || userEmail}
+                      </span>
+                      {isAdmin && (
+                        <span className="shrink-0 rounded-full bg-white/20 border border-white/25 px-2 py-0.5 text-[10px] font-semibold text-white">
+                          Quản trị viên
+                        </span>
+                      )}
+                    </div>
                   )}
                 </div>
               </Dropdown.Trigger>
