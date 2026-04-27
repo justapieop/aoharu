@@ -65,6 +65,20 @@ export default async function CommunityPage() {
         }
       }
 
+      // Check if the current user has reacted to this post (EXISTS-style)
+      const { data: reactionRow } = await supabase
+        .from("post_reactions")
+        .select("post_id")
+        .eq("post_id", post.id)
+        .eq("user_id", user.id)
+        .maybeSingle();
+
+      // Get total reaction count
+      const { count: reactionCount } = await supabase
+        .from("post_reactions")
+        .select("*", { count: "exact", head: true })
+        .eq("post_id", post.id);
+
       return {
         id: post.id,
         content: post.content,
@@ -74,6 +88,8 @@ export default async function CommunityPage() {
         author_avatar_url: `/api/avatar/${post.posted_by}`,
         author_fallback: authorName.charAt(0).toUpperCase() || "U",
         attachments,
+        liked: !!reactionRow,
+        reactionCount: reactionCount ?? 0,
       };
     })
   );

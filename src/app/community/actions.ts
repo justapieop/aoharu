@@ -2,6 +2,52 @@
 
 import { createClient } from "@/lib/supabase/server";
 
+export async function toggleReactionAction(postId: string) {
+  const supabase = await createClient();
+  const {
+    data: { user },
+    error: authError,
+  } = await supabase.auth.getUser();
+
+  if (authError || !user) {
+    return { success: false, error: "Bạn chưa đăng nhập." };
+  }
+
+  // Check if user already reacted (EXISTS-style: select a single row or null)
+  const { data: existing } = await supabase
+    .from("post_reactions")
+    .select("post_id")
+    .eq("post_id", postId)
+    .eq("user_id", user.id)
+    .maybeSingle();
+
+  if (existing) {
+    // Already liked → remove reaction
+    const { error: deleteError } = await supabase
+      .from("post_reactions")
+      .delete()
+      .eq("post_id", postId)
+      .eq("user_id", user.id);
+
+    if (deleteError) {
+      return { success: false, error: deleteError.message };
+    }
+
+    return { success: true, liked: false };
+  } else {
+    // Not liked → insert reaction
+    const { error: insertError } = await supabase
+      .from("post_reactions")
+      .insert({ post_id: postId, user_id: user.id });
+
+    if (insertError) {
+      return { success: false, error: insertError.message };
+    }
+
+    return { success: true, liked: true };
+  }
+}
+
 export async function createPostAction(formData: FormData) {
   const content = formData.get("content") as string | null;
   if (!content?.trim()) {

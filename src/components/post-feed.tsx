@@ -1,7 +1,10 @@
 "use client";
 
-import { Avatar, Card, Separator } from "@heroui/react";
+import { useOptimistic, useTransition } from "react";
+import { Avatar, Card, Separator, ToggleButton } from "@heroui/react";
 import { HeartIcon as HeartOutline } from "@heroicons/react/24/outline";
+import { HeartIcon as HeartSolid } from "@heroicons/react/24/solid";
+import { toggleReactionAction } from "@/app/community/actions";
 
 interface PostAttachment {
   url: string;
@@ -18,6 +21,8 @@ interface PostData {
   author_avatar_url: string;
   author_fallback: string;
   attachments: PostAttachment[];
+  liked: boolean;
+  reactionCount: number;
 }
 
 function timeAgo(dateString: string): string {
@@ -36,6 +41,25 @@ function timeAgo(dateString: string): string {
 }
 
 export function PostCard({ post }: { post: PostData }) {
+  const [isPending, startTransition] = useTransition();
+
+  const [optimistic, setOptimistic] = useOptimistic(
+    { liked: post.liked, count: post.reactionCount },
+    (_current, newLiked: boolean) => ({
+      liked: newLiked,
+      count: newLiked ? _current.count + 1 : _current.count - 1,
+    })
+  );
+
+  function handleToggle() {
+    const newLiked = !optimistic.liked;
+
+    startTransition(async () => {
+      setOptimistic(newLiked);
+      await toggleReactionAction(post.id);
+    });
+  }
+
   return (
     <Card className="w-full">
       <Card.Header className="flex flex-row items-center gap-3 p-4 pb-2">
@@ -80,7 +104,25 @@ export function PostCard({ post }: { post: PostData }) {
       <Separator />
 
       <Card.Footer className="flex flex-row items-center gap-2 px-4 py-2">
-        <HeartOutline className="w-5 h-5 text-default-400 cursor-pointer hover:text-danger transition-colors" />
+        <ToggleButton
+          isIconOnly
+          variant="ghost"
+          size="sm"
+          aria-label="Like"
+          isSelected={optimistic.liked}
+          isDisabled={isPending}
+          onChange={handleToggle}
+          className="data-[selected=true]:text-danger"
+        >
+          {optimistic.liked ? (
+            <HeartSolid className="w-5 h-5" />
+          ) : (
+            <HeartOutline className="w-5 h-5" />
+          )}
+        </ToggleButton>
+        {optimistic.count > 0 && (
+          <span className="text-xs text-default-500">{optimistic.count}</span>
+        )}
       </Card.Footer>
     </Card>
   );
