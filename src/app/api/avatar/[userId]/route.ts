@@ -15,46 +15,38 @@ export async function GET(
 
   const supabase = await createClient();
 
-  // Look up the file UUID stored in profiles.avatar
-  const { data: profile, error: profileError } = await supabase
+  // Get the avatar UUID from the profiles table (used to verify an avatar exists)
+  const { data, error } = await supabase
     .from("profiles")
     .select("avatar")
     .eq("id", userId)
     .single();
 
-  if (profileError || !profile || !profile.avatar) {
+  if (error || !data || !data.avatar) {
     return new NextResponse("Not Found", { status: 404 });
   }
 
-  // Fetch file metadata from the "files" table using the UUID
-  const { data: fileRecord, error: fileError } = await supabase
-    .from("files")
-    .select("name, bucket_name, path, mime_type")
-    .eq("id", profile.avatar)
-    .single();
+  try {
+    // Download from the deterministic path in the "avatars" bucket
+    const filePath = `${userId}/avatar`;
+    const { data: fileData, error: downloadError } = await supabase.storage
+      .from("avatars")
+      .download(filePath);
 
-  if (fileError || !fileRecord) {
-    return new NextResponse("File record not found", { status: 404 });
+    if (downloadError || !fileData) {
+      return new NextResponse("Failed to download avatar", { status: 500 });
+    }
+
+    const buffer = Buffer.from(await fileData.arrayBuffer());
+
+    return new NextResponse(new Uint8Array(buffer), {
+      headers: {
+        "Content-Type": fileData.type || "image/jpeg",
+        // Allow clients to cache strictly but utilize 'must-revalidate' behavior when we append custom ?v= timestamps
+        "Cache-Control": "public, max-age=31536000",
+      },
+    });
+  } catch (err) {
+    return new NextResponse("Error serving avatar", { status: 500 });
   }
-
-  // Download the file from Supabase Storage
-  // Path in bucket is /{user's id}/{filename}
-  const storagePath = `${userId}/${fileRecord.name}`;
-  const { data: fileData, error: downloadError } = await supabase.storage
-    .from(fileRecord.bucket_name)
-    .download(storagePath);
-
-  if (downloadError || !fileData) {
-    return new NextResponse("File download failed", { status: 500 });
-  }
-
-  const arrayBuffer = await fileData.arrayBuffer();
-
-  return new NextResponse(new Uint8Array(arrayBuffer), {
-    headers: {
-      "Content-Type": fileRecord.mime_type || "image/jpeg",
-      // Allow clients to cache strictly but utilize 'must-revalidate' behavior when we append custom ?v= timestamps
-      "Cache-Control": "public, max-age=31536000",
-    },
-  });
 }
