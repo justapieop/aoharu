@@ -1,7 +1,7 @@
 "use client";
 
 import { Avatar, Card, InputGroup, TextField, Modal, Button, Separator, Chip, CloseButton, Spinner } from "@heroui/react";
-import { PhotoIcon, VideoCameraIcon, XMarkIcon } from "@heroicons/react/24/outline";
+import { PhotoIcon, VideoCameraIcon } from "@heroicons/react/24/outline";
 import { useState, useRef } from "react";
 import { useRouter } from "next/navigation";
 import { createPostAction } from "@/app/community/actions";
@@ -17,6 +17,7 @@ export function CreatePostBar({ userId, displayName, avatarFallback }: CreatePos
   const [postContent, setPostContent] = useState("");
   const [attachments, setAttachments] = useState<File[]>([]);
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [modalInstanceKey, setModalInstanceKey] = useState(0);
   const fileInputRef = useRef<HTMLInputElement>(null);
   const router = useRouter();
 
@@ -51,13 +52,13 @@ export function CreatePostBar({ userId, displayName, avatarFallback }: CreatePos
       }
 
       const result = await createPostAction(formData);
-
       if (!result.success) {
         throw new Error(result.error);
       }
 
       setPostContent("");
       setAttachments([]);
+      setModalInstanceKey((prev) => prev + 1);
       router.refresh();
     } catch (error: any) {
       console.error(error);
@@ -70,7 +71,7 @@ export function CreatePostBar({ userId, displayName, avatarFallback }: CreatePos
   const canPost = postContent.trim().length > 0 || attachments.length > 0;
 
   return (
-    <Modal>
+    <Modal key={modalInstanceKey}>
       <Modal.Trigger className="w-full">
         <Card className="w-full cursor-pointer">
           <Card.Content className="flex flex-row items-center gap-2 sm:gap-3 p-2 sm:p-3">
