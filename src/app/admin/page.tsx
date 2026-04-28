@@ -1,8 +1,7 @@
 import { redirect } from "next/navigation";
-import Link from "next/link";
 import { createClient } from "@/lib/supabase/server";
-import { Surface } from "@heroui/react";
-import { MapPinIcon, ShieldCheckIcon } from "@heroicons/react/24/outline";
+import { Link, Surface } from "@heroui/react";
+import { MapPinIcon, ShieldCheckIcon, DocumentTextIcon } from "@heroicons/react/24/outline";
 import { AdminNavbar } from "@/components/admin-navbar";
 
 export default async function AdminPage() {
@@ -38,6 +37,24 @@ export default async function AdminPage() {
 
         <Surface variant="secondary" className="mt-4 rounded-xl border border-default-200 p-6">
           <div className="flex items-start gap-3">
+            <div className="rounded-lg bg-blue-500/10 p-2 text-blue-500">
+              <DocumentTextIcon className="h-5 w-5" />
+            </div>
+            <div className="flex-1">
+              <h2 className="text-lg font-semibold">Quản lý bài viết</h2>
+              <p className="mt-1 text-sm text-default-500">Thêm, chỉnh sửa hoặc xóa bài viết để quản lý nội dung cộng đồng.</p>
+              <Link
+                href="/admin/articles"
+                className="mt-4 inline-flex rounded-lg bg-accent px-4 py-2 text-sm font-semibold text-accent-foreground no-underline hover:opacity-90"
+              >
+                Đi đến quản lý bài viết
+              </Link>
+            </div>
+          </div>
+        </Surface>
+
+        <Surface variant="secondary" className="mt-4 rounded-xl border border-default-200 p-6">
+          <div className="flex items-start gap-3">
             <div className="rounded-lg bg-accent/10 p-2 text-accent">
               <MapPinIcon className="h-5 w-5" />
             </div>
@@ -48,7 +65,7 @@ export default async function AdminPage() {
               </p>
               <Link
                 href="/admin/pins"
-                className="mt-4 inline-flex items-center rounded-lg bg-accent px-4 py-2 text-sm font-semibold text-accent-foreground transition-opacity hover:opacity-90"
+                className="mt-4 inline-flex rounded-lg bg-accent px-4 py-2 text-sm font-semibold text-accent-foreground no-underline hover:opacity-90"
               >
                 Đi đến quản lý marker
               </Link>
@@ -68,7 +85,7 @@ export default async function AdminPage() {
               </p>
               <Link
                 href="/admin/challenges"
-                className="mt-4 inline-flex items-center rounded-lg bg-orange-500 px-4 py-2 text-sm font-semibold text-white transition-opacity hover:opacity-90"
+                className="mt-4 inline-flex rounded-lg bg-accent px-4 py-2 text-sm font-semibold text-accent-foreground no-underline hover:opacity-90"
               >
                 Đi đến quản lý thử thách
               </Link>
