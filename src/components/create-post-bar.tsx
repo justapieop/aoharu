@@ -73,7 +73,7 @@ export function CreatePostBar({ userId, displayName, avatarFallback }: CreatePos
   return (
     <Modal key={modalInstanceKey}>
       <Modal.Trigger className="w-full">
-        <Card className="w-full cursor-pointer">
+        <Card className="w-full cursor-pointer border-2 border-default-300 transition-colors hover:border-default-400">
           <Card.Content className="flex flex-row items-center gap-2 sm:gap-3 p-2 sm:p-3">
             <Avatar size="sm" className="shrink-0">
               <Avatar.Image src={avatarUrl} alt="Avatar" className="object-cover" />
@@ -110,10 +110,14 @@ export function CreatePostBar({ userId, displayName, avatarFallback }: CreatePos
                 value={postContent}
                 onChange={setPostContent}
               >
-                <InputGroup variant="secondary" fullWidth className="border-none shadow-none bg-transparent">
+                <InputGroup
+                  variant="secondary"
+                  fullWidth
+                  className="rounded-xl border-2 border-default-200 bg-default-100 shadow-none"
+                >
                   <InputGroup.TextArea
                     placeholder={`Bạn đang nghĩ gì, ${displayName}?`}
-                    className="resize-none border-none shadow-none bg-transparent text-lg min-h-40"
+                    className="resize-none border-none bg-default-100 px-4 py-3 shadow-none text-lg min-h-40"
                     rows={6}
                   />
                 </InputGroup>

@@ -311,3 +311,73 @@ export async function deletePostAction(postId: string) {
   revalidatePath("/community");
   return { success: true };
 }
+
+export async function deleteCommentAction(postId: string, commentId: string) {
+  const supabase = await createClient();
+  const {
+    data: { user },
+    error: authError,
+  } = await supabase.auth.getUser();
+
+  if (authError || !user) {
+    return { success: false, error: "Bạn chưa đăng nhập." };
+  }
+
+  const { data: ownedComment, error: ownershipError } = await supabase
+    .from("post_comments")
+    .select("id")
+    .eq("id", commentId)
+    .eq("post_id", postId)
+    .eq("commented_by", user.id)
+    .maybeSingle();
+
+  if (ownershipError) {
+    return { success: false, error: ownershipError.message };
+  }
+
+  if (!ownedComment) {
+    return { success: false, error: "Bạn chỉ có thể xóa bình luận của mình." };
+  }
+
+  const commentFolder = `${postId}/comments/${commentId}`;
+  const { data: attachmentFiles, error: attachmentListError } = await supabase.storage
+    .from("assets")
+    .list(commentFolder, { limit: 100 });
+
+  // Storage cleanup is best-effort so DB delete is not blocked by bucket policy issues.
+  if (!attachmentListError) {
+    const attachmentPaths = (attachmentFiles ?? [])
+      .filter((file) => !!file.id)
+      .map((file) => `${commentFolder}/${file.name}`);
+
+    if (attachmentPaths.length > 0) {
+      const { error: storageDeleteError } = await supabase.storage
+        .from("assets")
+        .remove(attachmentPaths);
+
+      if (storageDeleteError) {
+        console.error("Failed to remove comment attachments:", storageDeleteError.message);
+      }
+    }
+  } else {
+    console.error("Failed to list comment attachments:", attachmentListError.message);
+  }
+
+  const { error: deleteError, count: deletedCount } = await supabase
+    .from("post_comments")
+    .delete({ count: "exact" })
+    .eq("id", commentId)
+    .eq("post_id", postId)
+    .eq("commented_by", user.id);
+
+  if (deleteError) {
+    return { success: false, error: deleteError.message };
+  }
+
+  if ((deletedCount ?? 0) === 0) {
+    return { success: false, error: "Không thể xóa bình luận này." };
+  }
+
+  revalidatePath("/community");
+  return { success: true };
+}

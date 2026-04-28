@@ -2,6 +2,20 @@
 
 import { createClient } from "@/lib/supabase/server";
 
+export async function updateDisplayName(displayName: string) {
+  const supabase = await createClient();
+
+  const { data, error } = await supabase.auth.updateUser({
+    data: { display_name: displayName, },
+  });
+
+  if (error || !data) {
+    return { success: false, error: "Lỗi cập nhật tên", };
+  }
+
+  return { success: true, };
+}
+
 export async function uploadAvatarAction(formData: FormData) {
   const file = formData.get("file") as File | null;
   if (!file) {

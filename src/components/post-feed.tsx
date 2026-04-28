@@ -11,7 +11,7 @@ import {
   XMarkIcon,
 } from "@heroicons/react/24/outline";
 import { HeartIcon as HeartSolid } from "@heroicons/react/24/solid";
-import { createCommentAction, deletePostAction, loadMorePostsAction, toggleReactionAction } from "@/app/community/actions";
+import { createCommentAction, deleteCommentAction, deletePostAction, loadMorePostsAction, toggleReactionAction } from "@/app/community/actions";
 
 interface PostAttachment {
   url: string;
@@ -66,16 +66,19 @@ function timeAgo(dateString: string): string {
 export function PostCard({
   post,
   canDelete,
+  currentUserId,
   onDelete,
 }: {
   post: PostData;
   canDelete: boolean;
+  currentUserId: string;
   onDelete: (postId: string) => Promise<void>;
 }) {
   const [isPending, startTransition] = useTransition();
   const [isCommentPending, startCommentTransition] = useTransition();
   const [isDeletePending, startDeleteTransition] = useTransition();
   const [comments, setComments] = useState(post.comments);
+  const [deletingCommentIds, setDeletingCommentIds] = useState<Record<string, boolean>>({});
   const [commentDraft, setCommentDraft] = useState("");
   const [commentAttachment, setCommentAttachment] = useState<File | null>(null);
   const commentAttachmentInputRef = useRef<HTMLInputElement | null>(null);
@@ -144,6 +147,31 @@ export function PostCard({
     });
   }
 
+  function handleDeleteComment(commentId: string) {
+    setDeletingCommentIds((prev) => ({ ...prev, [commentId]: true }));
+
+    startCommentTransition(async () => {
+      const result = await deleteCommentAction(post.id, commentId);
+
+      if (!result?.success) {
+        console.error("Failed to delete comment:", result?.error || "Unknown error");
+        setDeletingCommentIds((prev) => {
+          const next = { ...prev };
+          delete next[commentId];
+          return next;
+        });
+        return;
+      }
+
+      setComments((prev) => prev.filter((comment) => comment.id !== commentId));
+      setDeletingCommentIds((prev) => {
+        const next = { ...prev };
+        delete next[commentId];
+        return next;
+      });
+    });
+  }
+
   function openCommentAttachmentPicker(accept: string) {
     if (!commentAttachmentInputRef.current) {
       return;
@@ -169,7 +197,7 @@ export function PostCard({
   }
 
   return (
-    <Card className="w-full">
+    <Card className="w-full border-2 border-default-300">
       <Card.Header className="flex flex-row items-center gap-3 p-4 pb-2">
         <Avatar size="sm" className="shrink-0">
           <Avatar.Image src={post.author_avatar_url} alt="Avatar" className="object-cover" />
@@ -324,7 +352,23 @@ export function PostCard({
                                   <Avatar.Fallback>{comment.author_fallback}</Avatar.Fallback>
                                 </Avatar>
                                 <div className="rounded-xl bg-default-100 px-3 py-2">
-                                  <p className="text-xs font-semibold mb-0.5">{comment.author_name}</p>
+                                  <div className="mb-0.5 flex items-center gap-2">
+                                    <p className="text-xs font-semibold">{comment.author_name}</p>
+                                    {comment.commented_by === currentUserId && (
+                                      <Button
+                                        isIconOnly
+                                        size="sm"
+                                        variant="ghost"
+                                        aria-label="Xóa bình luận"
+                                        isPending={!!deletingCommentIds[comment.id]}
+                                        isDisabled={!!deletingCommentIds[comment.id]}
+                                        onPress={() => handleDeleteComment(comment.id)}
+                                        className="ml-auto h-6 w-6 min-w-6 text-danger"
+                                      >
+                                        <TrashIcon className="w-3.5 h-3.5" />
+                                      </Button>
+                                    )}
+                                  </div>
 
                                   {comment.content.trim().length > 0 && (
                                     <p className="text-sm whitespace-pre-wrap">{comment.content}</p>
@@ -524,6 +568,7 @@ export function PostFeed({ posts, hasMore, currentUserId }: { posts: PostData[];
           key={post.id}
           post={post}
           canDelete={post.posted_by === currentUserId}
+          currentUserId={currentUserId}
           onDelete={handleDeletePost}
         />
       ))}
