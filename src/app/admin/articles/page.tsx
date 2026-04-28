@@ -4,6 +4,7 @@ import { Link, Surface } from "@heroui/react";
 import { DocumentTextIcon } from "@heroicons/react/24/outline";
 import { AdminNavbar } from "@/components/admin-navbar";
 import { CategoryManager } from "@/components/category-manager";
+import { ArticleCreateForm } from "@/components/article-create-form";
 
 export default async function ArticleManagePage() {
   const supabase = await createClient();
@@ -56,14 +57,20 @@ export default async function ArticleManagePage() {
 
         <Surface variant="secondary" className="mt-4 rounded-xl border border-default-200 p-6">
           <CategoryManager initialCategories={categories ?? []} />
+        </Surface>
 
+        <Surface variant="secondary" className="mt-4 rounded-xl border border-default-200 p-6">
+          <ArticleCreateForm categories={categories ?? []} />
+        </Surface>
+
+        <div className="mt-4">
           <Link
             href="/admin"
-            className="mt-4 inline-flex rounded-lg border border-default-300 px-4 py-2 text-sm font-semibold text-default-700 no-underline hover:bg-default-100"
+            className="inline-flex rounded-lg border border-default-300 px-4 py-2 text-sm font-semibold text-default-700 no-underline hover:bg-default-100"
           >
             Quay lại trang quản trị
           </Link>
-        </Surface>
+        </div>
       </main>
     </Surface>
   );

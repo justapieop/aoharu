@@ -15,7 +15,8 @@ import {
   ChevronLeftIcon,
   ChevronRightIcon,
   UserIcon,
-  ArrowRightEndOnRectangleIcon
+  ArrowRightEndOnRectangleIcon,
+  DocumentTextIcon
 } from "@heroicons/react/24/outline";
 
 const navItems = [
@@ -33,6 +34,11 @@ const navItems = [
     name: "Cộng đồng",
     href: "/community",
     icon: UserGroupIcon
+  },
+  {
+    name: "Bài viết",
+    href: "/articles",
+    icon: DocumentTextIcon
   },
   {
     name: "Thử thách",
