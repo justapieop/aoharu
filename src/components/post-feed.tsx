@@ -142,12 +142,14 @@ export function PostCard({
   }
 
   function handleDeletePost() {
+    if (!window.confirm("Bạn có chắc chắn muốn xóa bài viết này?")) return;
     startDeleteTransition(async () => {
       await onDelete(post.id);
     });
   }
 
   function handleDeleteComment(commentId: string) {
+    if (!window.confirm("Bạn có chắc chắn muốn xóa bình luận này?")) return;
     setDeletingCommentIds((prev) => ({ ...prev, [commentId]: true }));
 
     startCommentTransition(async () => {

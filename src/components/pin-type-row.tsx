@@ -277,7 +277,7 @@ function PinCard({ pin, pinTypes }: { pin: PinItem; pinTypes: PinTypeOption[] })
           </Modal.Backdrop>
         </Modal>
 
-        <Form action={deletePinAction}>
+        <Form action={deletePinAction} onSubmit={(e) => { if (!window.confirm("Bạn có chắc chắn muốn xóa pin này?")) e.preventDefault(); }}>
           <input type="hidden" name="id" value={pin.id} />
           <Button type="submit" variant="danger" size="sm">
             Xóa pin
@@ -386,7 +386,7 @@ export function PinTypeRow({ id, created_at, name, icon, pinTypes, pins }: PinTy
             </Modal.Backdrop>
           </Modal>
 
-          <Form action={deletePinTypeAction}>
+          <Form action={deletePinTypeAction} onSubmit={(e) => { if (!window.confirm("Bạn có chắc chắn muốn xóa marker type này?")) e.preventDefault(); }}>
             <input type="hidden" name="id" value={id} />
             <Button type="submit" variant="danger" size="sm">
               Xóa
