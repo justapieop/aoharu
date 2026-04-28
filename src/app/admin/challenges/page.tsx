@@ -94,52 +94,57 @@ export default function ChallengesAdminPage() {
         </div>
 
         <Surface variant="secondary" className="rounded-2xl border border-default-200 overflow-hidden shadow-sm">
-          {isLoading ? (
-            <div className="p-8 text-center text-default-500">Đang tải dữ liệu...</div>
-          ) : challenges.length === 0 ? (
-            <div className="p-8 text-center text-default-500">Chưa có thử thách nào được tạo.</div>
-          ) : (
-            <Table aria-label="Bảng quản lý thử thách" className="min-w-full">
-              <Table.Header>
-                <Table.Column>TÊN THỬ THÁCH</Table.Column>
-                <Table.Column>ĐIỂM THƯỞNG</Table.Column>
-                <Table.Column>BẮT ĐẦU</Table.Column>
-                <Table.Column>KẾT THÚC</Table.Column>
-                <Table.Column>HÀNH ĐỘNG</Table.Column>
-              </Table.Header>
-              <Table.Body>
-                {challenges.map((challenge) => (
-                  <Table.Row key={challenge.id}>
-                    <Table.Cell>
-                      <div className="font-semibold">{challenge.name}</div>
-                    </Table.Cell>
-                    <Table.Cell>
-                      <span className="inline-flex items-center rounded-full bg-warning/10 px-2 py-1 text-xs font-semibold text-warning-700">
-                        +{challenge.points} điểm
-                      </span>
-                    </Table.Cell>
-                    <Table.Cell>{new Date(challenge.started_at).toLocaleDateString("vi-VN")}</Table.Cell>
-                    <Table.Cell>{new Date(challenge.ends_at).toLocaleDateString("vi-VN")}</Table.Cell>
-                    <Table.Cell>
-                      <div className="flex justify-end gap-2">
-                        <Button
-                          isIconOnly
-                          size="sm"
-                          variant="ghost"
-                          className="text-danger hover:bg-danger/10"
-                          aria-label="Xóa"
-                          isDisabled={isPending}
-                          onPress={() => handleDelete(challenge.id)}
-                        >
-                          <TrashIcon className="w-4 h-4" />
-                        </Button>
-                      </div>
-                    </Table.Cell>
-                  </Table.Row>
-                ))}
-              </Table.Body>
-            </Table>
-          )}
+          <Table className="min-w-full">
+            <Table.ScrollContainer>
+              <Table.Content aria-label="Bảng quản lý thử thách">
+                <Table.Header>
+                  <Table.Column>TÊN THỬ THÁCH</Table.Column>
+                  <Table.Column>ĐIỂM THƯỞNG</Table.Column>
+                  <Table.Column>BẮT ĐẦU</Table.Column>
+                  <Table.Column>KẾT THÚC</Table.Column>
+                  <Table.Column>HÀNH ĐỘNG</Table.Column>
+                </Table.Header>
+                <Table.Body
+                  items={challenges}
+                  renderEmptyState={() => (
+                    <div className="p-8 text-center text-default-500">
+                      {isLoading ? "Đang tải dữ liệu..." : "Chưa có thử thách nào được tạo."}
+                    </div>
+                  )}
+                >
+                  {(challenge) => (
+                    <Table.Row key={challenge.id}>
+                      <Table.Cell>
+                        <div className="font-semibold">{challenge.name}</div>
+                      </Table.Cell>
+                      <Table.Cell>
+                        <span className="inline-flex items-center rounded-full bg-warning/10 px-2 py-1 text-xs font-semibold text-warning-700">
+                          +{challenge.points} điểm
+                        </span>
+                      </Table.Cell>
+                      <Table.Cell>{new Date(challenge.started_at).toLocaleDateString("vi-VN")}</Table.Cell>
+                      <Table.Cell>{new Date(challenge.ends_at).toLocaleDateString("vi-VN")}</Table.Cell>
+                      <Table.Cell>
+                        <div className="flex justify-end gap-2">
+                          <Button
+                            isIconOnly
+                            size="sm"
+                            variant="ghost"
+                            className="text-danger hover:bg-danger/10"
+                            aria-label="Xóa"
+                            isDisabled={isPending}
+                            onPress={() => handleDelete(challenge.id)}
+                          >
+                            <TrashIcon className="w-4 h-4" />
+                          </Button>
+                        </div>
+                      </Table.Cell>
+                    </Table.Row>
+                  )}
+                </Table.Body>
+              </Table.Content>
+            </Table.ScrollContainer>
+          </Table>
         </Surface>
       </main>
 
