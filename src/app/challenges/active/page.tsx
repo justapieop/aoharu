@@ -101,7 +101,7 @@ export default async function ActiveChallengePage(): Promise<JSX.Element> {
       <Surface variant="default" className="flex-1 h-full overflow-y-auto px-3 py-4 pb-20 sm:pb-4 md:p-6 bg-default-50/50">
         <Surface variant="transparent" className="w-full max-w-3xl mx-auto flex flex-col gap-6">
           
-          <div className="rounded-3xl bg-linear-to-br from-accent/20 via-emerald-500/5 to-transparent p-6 md:p-10 flex flex-col items-center justify-center text-center border border-accent/20 relative overflow-hidden shadow-sm">
+          <div className="rounded-3xl bg-linear-to-br from-accent-soft-hover via-emerald-500/5 to-transparent p-6 md:p-10 flex flex-col items-center justify-center text-center border border-accent-soft-hover relative overflow-hidden shadow-sm">
             <div className="absolute top-0 left-0 w-full h-full bg-[url('/noise.png')] opacity-10 mix-blend-overlay"></div>
             <div className="relative z-10 flex flex-col items-center">
               <div className="p-3 bg-white/60 backdrop-blur-md rounded-2xl shadow-sm mb-4 border border-white/40">
