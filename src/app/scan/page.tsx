@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useRef } from "react";
-import { Surface, Button, Card, Spinner, ToggleButtonGroup, ToggleButton } from "@heroui/react";
+import { Surface, Button, Card, Spinner, ToggleButtonGroup, ToggleButton, Chip, CloseButton, Alert } from "@heroui/react";
 import { Sidebar } from "@/components/sidebar";
 import { createClient } from "@/lib/supabase/client";
 import ReactMarkdown from "react-markdown";
@@ -14,7 +14,6 @@ import {
   FireIcon,
   CameraIcon,
   ArrowUpTrayIcon,
-  XMarkIcon,
   PhotoIcon,
 } from "@heroicons/react/24/outline";
 
@@ -109,7 +108,6 @@ export default function ScanPage() {
     setResult(null);
 
     try {
-      // Convert image to base64 safely (chunked to avoid call stack overflow)
       const arrayBuffer = await selectedFile.arrayBuffer();
       const uint8 = new Uint8Array(arrayBuffer);
       const chunkSize = 8192;
@@ -148,15 +146,12 @@ export default function ScanPage() {
       <Sidebar />
 
       <div className="flex-1 h-full overflow-y-auto flex flex-col lg:flex-row text-foreground">
-        {/* Left column — controls & upload */}
         <main className={`flex-1 flex flex-col items-center px-3 py-6 pb-20 sm:pb-6 md:px-4 md:py-16 ${result ? "justify-start" : "justify-center"}`}>
-          {/* AI badge */}
-          <div className="mb-3 sm:mb-5 flex items-center gap-1.5 sm:gap-2 rounded-full bg-linear-to-r from-green-500 to-emerald-400 px-3 py-1 sm:px-4 sm:py-1.5 text-xs sm:text-sm font-semibold text-white shadow-lg shadow-green-900/40">
+          <Chip variant="primary" color="accent" className="mb-3 sm:mb-5 shadow-lg shadow-green-900/40">
             <SparklesIcon className="w-4 h-4" />
-            Công cụ AI
-          </div>
+            <Chip.Label>Công cụ AI</Chip.Label>
+          </Chip>
 
-          {/* Heading */}
           <h1 className="text-center text-2xl font-extrabold tracking-tight sm:text-4xl md:text-5xl">
             Trợ lý thông minh
           </h1>
@@ -164,8 +159,7 @@ export default function ScanPage() {
             Chụp ảnh và để AI giúp bạn
           </p>
 
-          {/* Mode selector */}
-          <div className="mt-4 md:mt-8 w-full max-w-lg overflow-x-auto scrollbar-none" style={{ scrollbarWidth: 'none' }}>
+          <div className="mt-4 md:mt-8 w-full flex justify-center overflow-x-auto scrollbar-none" style={{ scrollbarWidth: 'none' }}>
             <ToggleButtonGroup
               selectionMode="single"
               disallowEmptySelection
@@ -182,7 +176,7 @@ export default function ScanPage() {
                   <ToggleButton
                     key={mode.id}
                     id={mode.id}
-                    className="flex items-center gap-1 sm:gap-1.5 rounded-full px-2.5 sm:px-4 py-1.5 sm:py-2 text-xs sm:text-sm font-medium text-default-500 transition-all whitespace-nowrap data-selected:bg-primary/10 data-selected:text-primary"
+                    className="flex items-center gap-1 sm:gap-1.5 rounded-full px-2.5 sm:px-4 py-1.5 sm:py-2 text-xs sm:text-sm font-medium text-default-500 transition-all whitespace-nowrap data-selected:bg-accent/10 data-selected:text-accent"
                   >
                     {idx > 0 && <ToggleButtonGroup.Separator />}
                     <Icon className="w-4 h-4" />
@@ -193,34 +187,29 @@ export default function ScanPage() {
             </ToggleButtonGroup>
           </div>
 
-          {/* Active mode label */}
           <div className="mt-5 md:mt-8 flex flex-col items-center gap-1">
-            <span className="flex items-center gap-2 rounded-full bg-primary/10 px-4 py-1 text-sm font-semibold text-primary border border-primary/20">
+            <Chip variant="secondary" color="accent">
               <ActiveIcon className="w-4 h-4" />
-              {active.label}
-            </span>
+              <Chip.Label>{active.label}</Chip.Label>
+            </Chip>
             <p className="mt-1 text-sm text-default-400">{active.description}</p>
           </div>
 
-          {/* Upload dropzone / preview */}
           <div className="mt-4 md:mt-6 w-full max-w-lg">
             {previewUrl ? (
-              <Card variant="default" className="border-2 border-primary/30">
+              <Card variant="default" className="border-2 border-accent/30">
                 <Card.Content className="flex flex-col items-center gap-4 p-4">
                   <div className="relative w-full">
-                    {/* eslint-disable-next-line @next/next/no-img-element */}
                     <img
                       src={previewUrl}
                       alt="Preview"
                       className="w-full max-h-72 object-contain rounded-xl"
                     />
-                    <button
-                      onClick={clearFile}
-                      className="absolute top-2 right-2 flex items-center justify-center h-7 w-7 rounded-full bg-default-900/70 text-white hover:bg-default-900 transition-colors"
+                    <CloseButton
+                      onPress={clearFile}
                       aria-label="Xóa ảnh"
-                    >
-                      <XMarkIcon className="w-4 h-4" />
-                    </button>
+                      className="absolute top-2 right-2 bg-default-900/70 text-white hover:bg-default-900"
+                    />
                   </div>
 
                   <p className="text-sm text-default-500 truncate max-w-full px-2">
@@ -252,10 +241,10 @@ export default function ScanPage() {
                 onDrop={handleDrop}
                 onDragOver={(e) => e.preventDefault()}
                 onClick={() => fileInputRef.current?.click()}
-                className="cursor-pointer border-2 border-dashed border-default-200 rounded-2xl transition-all hover:border-primary/50 hover:bg-primary/5"
+                className="cursor-pointer border-2 border-dashed border-default-200 rounded-2xl transition-all hover:border-accent/50 hover:bg-accent/5"
               >
                 <div className="flex flex-col items-center gap-4 py-6 px-3 sm:gap-5 sm:py-10 sm:px-4">
-                  <div className="flex h-12 w-12 sm:h-16 sm:w-16 items-center justify-center rounded-xl sm:rounded-2xl bg-primary/10 border border-primary/20 text-primary">
+                  <div className="flex h-12 w-12 sm:h-16 sm:w-16 items-center justify-center rounded-xl sm:rounded-2xl bg-accent/10 border border-accent/20 text-accent">
                     <PhotoIcon className="w-6 h-6 sm:w-8 sm:h-8" />
                   </div>
                   <div className="text-center">
@@ -287,13 +276,13 @@ export default function ScanPage() {
             )}
           </div>
 
-          {/* Error */}
           {error && (
-            <Card variant="default" className="mt-4 w-full max-w-lg border border-danger/30 bg-danger/5">
-              <Card.Content className="py-3 px-4 text-sm text-danger">
-                {error}
-              </Card.Content>
-            </Card>
+            <Alert status="danger" className="mt-4 w-full max-w-lg">
+              <Alert.Indicator />
+              <Alert.Content>
+                <Alert.Description>{error}</Alert.Description>
+              </Alert.Content>
+            </Alert>
           )}
 
           <input
@@ -305,13 +294,12 @@ export default function ScanPage() {
           />
         </main>
 
-        {/* Right column — AI result (appears when result exists) */}
         {result && (
           <aside className="w-full lg:w-120 lg:min-w-100 h-auto lg:h-full overflow-y-auto border-t lg:border-t-0 lg:border-l border-default-200 bg-default-50 p-4 sm:p-6">
             <Card variant="secondary">
               <Card.Header className="pb-2">
                 <Card.Title className="flex items-center gap-2 text-base">
-                  <SparklesIcon className="w-4 h-4 text-primary" />
+                  <SparklesIcon className="w-4 h-4 text-accent" />
                   Kết quả phân tích
                 </Card.Title>
               </Card.Header>

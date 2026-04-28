@@ -8,10 +8,10 @@ import { Tooltip, Avatar, Dropdown, Label } from "@heroui/react";
 import { createClient } from "@/lib/supabase/client";
 import { 
   MapIcon, 
+  ShieldCheckIcon,
   ViewfinderCircleIcon, 
   UserGroupIcon, 
   FireIcon, 
-  TrophyIcon,
   ChevronLeftIcon,
   ChevronRightIcon,
   UserIcon,
@@ -38,11 +38,6 @@ const navItems = [
     name: "Thử thách",
     href: "/challenges",
     icon: FireIcon
-  },
-  {
-    name: "BXH",
-    href: "/leaderboard",
-    icon: TrophyIcon
   }
 ];
 
@@ -52,16 +47,31 @@ export function Sidebar() {
   const [userId, setUserId] = useState<string | null>(null);
   const [userEmail, setUserEmail] = useState<string | null>(null);
   const [userName, setUserName] = useState<string | null>(null);
+  const [isAdmin, setIsAdmin] = useState(false);
   const [avatarVersion, setAvatarVersion] = useState<number>(Date.now());
 
   useEffect(() => {
     const supabase = createClient();
-    supabase.auth.getUser().then(({ data }) => {
-      if (data?.user) {
-        setUserId(data.user.id);
-        setUserEmail(data.user.email ?? null);
-        setUserName(data.user.user_metadata?.display_name ?? null);
+    supabase.auth.getUser().then(async ({ data }) => {
+      if (!data?.user) {
+        setUserId(null);
+        setUserEmail(null);
+        setUserName(null);
+        setIsAdmin(false);
+        return;
       }
+
+      setUserId(data.user.id);
+      setUserEmail(data.user.email ?? null);
+      setUserName(data.user.user_metadata?.display_name ?? null);
+
+      const { data: profile } = await supabase
+        .from("profiles")
+        .select("admin")
+        .eq("id", data.user.id)
+        .maybeSingle();
+
+      setIsAdmin(profile?.admin === true);
     });
 
     const handleAvatarUpdate = () => {
@@ -86,9 +96,13 @@ export function Sidebar() {
       await supabase.auth.signOut();
       setUserEmail(null);
       setUserName(null);
+      setUserId(null);
+      setIsAdmin(false);
       router.push("/");
     } else if (key === "profile") {
       router.push("/profile");
+    } else if (key === "admin") {
+      router.push("/admin");
     }
   };
 
@@ -96,11 +110,11 @@ export function Sidebar() {
     <aside 
       className={`${
         isCollapsed ? "md:w-20" : "md:w-64"
-      } w-full h-15 md:h-full shrink-0 bg-background border-t md:border-t-0 md:border-r border-default-200 flex flex-row md:flex-col sticky bottom-0 md:top-0 shadow-[0_-4px_6px_-1px_rgba(0,0,0,0.05)] md:shadow-sm z-50 transition-all duration-300 order-last md:order-first`}
+      } w-full h-15 md:h-full shrink-0 bg-accent flex flex-row md:flex-col sticky bottom-0 md:top-0 shadow-[0_-4px_6px_-1px_rgba(0,0,0,0.1)] md:shadow-lg z-50 transition-all duration-300 order-last md:order-first`}
     >
       <Link 
         href="/" 
-        className={`hidden md:flex h-16 items-center border-b border-default-100 hover:opacity-80 transition-opacity overflow-hidden ${
+        className={`hidden md:flex h-16 items-center border-b border-white/15 hover:opacity-80 transition-opacity overflow-hidden ${
           isCollapsed ? "justify-center" : "px-6"
         }`}
       >
@@ -112,7 +126,7 @@ export function Sidebar() {
           className="rounded-lg shrink-0 w-auto h-auto"
         />
         {!isCollapsed && (
-          <span className="font-bold text-xl text-accent tracking-wide ml-3 whitespace-nowrap">
+          <span className="font-bold text-xl text-white tracking-wide ml-3 whitespace-nowrap">
             Bản đồ xanh
           </span>
         )}
@@ -130,11 +144,11 @@ export function Sidebar() {
                 isCollapsed ? "justify-center w-10 h-10 md:w-11 md:h-11 mx-auto" : "justify-center md:justify-start w-10 h-10 md:w-full md:px-3 md:py-2.5 mx-auto md:mx-0"
               } ${
                 isActive 
-                  ? "bg-accent/10 text-accent font-semibold" 
-                  : "text-default-600 hover:bg-default-100 hover:text-foreground font-medium"
+                  ? "bg-white/20 text-white font-semibold" 
+                  : "text-white/70 hover:bg-white/10 hover:text-white font-medium"
               }`}
             >
-              <span className={`flex items-center justify-center ${isActive ? "text-accent" : "text-default-500 group-hover:text-foreground"}`}>
+              <span className={`flex items-center justify-center ${isActive ? "text-white" : "text-white/70 group-hover:text-white"}`}>
                 <Icon className="w-6 h-6 md:w-6 md:h-6 shrink-0" />
               </span>
               {!isCollapsed && (
@@ -153,7 +167,7 @@ export function Sidebar() {
                     <Tooltip.Trigger>
                       {linkContent}
                     </Tooltip.Trigger>
-                    <Tooltip.Content placement="right" className="bg-surface text-foreground shadow-lg border border-default-200 font-medium px-3 py-1.5 rounded-lg text-sm ml-2">
+                    <Tooltip.Content placement="right" className="bg-overlay text-foreground shadow-lg border border-default-200 font-medium px-3 py-1.5 rounded-lg text-sm ml-2">
                       {item.name}
                     </Tooltip.Content>
                   </Tooltip>
@@ -170,19 +184,26 @@ export function Sidebar() {
         })}
       </nav>
 
-      <div className="flex md:flex-col p-1 md:p-3 md:border-t border-default-200 justify-center items-center md:gap-2 mr-1 md:mr-0 shrink-0">
+      <div className="flex md:flex-col p-1 md:p-3 md:border-t border-white/15 justify-center items-center md:gap-2 mr-1 md:mr-0 shrink-0">
           {userEmail ? (
             <Dropdown>
               <Dropdown.Trigger>
-                <div tabIndex={0} className="p-2 rounded-xl md:rounded-lg text-default-500 hover:bg-default-100 transition-colors w-10 h-10 md:w-full md:h-auto mx-auto flex justify-center cursor-pointer items-center">
-                  <Avatar size="sm" className="border border-default-200">
+                <div tabIndex={0} className="p-2 rounded-xl md:rounded-lg text-white/80 hover:bg-white/10 transition-colors w-10 h-10 md:w-full md:h-auto mx-auto flex justify-center cursor-pointer items-center">
+                  <Avatar size="sm" className="border border-white/30">
                     {avatarUrl && <Avatar.Image src={avatarUrl} alt="User Avatar" className="object-cover" />}
                     <Avatar.Fallback>{(userName || userEmail).charAt(0).toUpperCase()}</Avatar.Fallback>
                   </Avatar>
                   {!isCollapsed && (
-                    <span className="hidden md:block ml-3 truncate text-sm">
-                      {userName || userEmail}
-                    </span>
+                    <div className="hidden md:flex ml-3 items-center gap-2 min-w-0">
+                      <span className="truncate text-sm text-white/90">
+                        {userName || userEmail}
+                      </span>
+                      {isAdmin && (
+                        <span className="shrink-0 rounded-full bg-white/20 border border-white/25 px-2 py-0.5 text-[10px] font-semibold text-white">
+                          Quản trị viên
+                        </span>
+                      )}
+                    </div>
                   )}
                 </div>
               </Dropdown.Trigger>
@@ -190,13 +211,21 @@ export function Sidebar() {
                 <Dropdown.Menu aria-label="User menu" onAction={(key) => handleDropdownAction(key)}>
                   <Dropdown.Item id="profile" textValue="Hồ sơ">
                     <div className="flex justify-between items-center w-full">
-                      <span>Hồ sơ</span>
+                    <Label>Hồ sơ</Label>
                       <UserIcon className="w-4 h-4 ml-2" />
                     </div>
                   </Dropdown.Item>
+                  {isAdmin && (
+                    <Dropdown.Item id="admin" textValue="Admin Panel">
+                      <div className="flex justify-between items-center w-full">
+                        <Label>Truy cập khu vực cho quản trị viên</Label>
+                        <ShieldCheckIcon className="w-4 h-4 ml-2" />
+                      </div>
+                    </Dropdown.Item>
+                  )}
                   <Dropdown.Item id="logout" textValue="Đăng xuất" variant="danger">
                     <div className="flex justify-between items-center w-full">
-                      <span>Đăng xuất</span>
+                      <Label>Đăng xuất</Label>
                     <ArrowRightEndOnRectangleIcon className="w-4 h-4 ml-2" />
                     </div>
                   </Dropdown.Item>
@@ -207,21 +236,21 @@ export function Sidebar() {
             <Link href="/auth/login" className="w-auto md:w-full">
               <Tooltip delay={300}>
                 <Tooltip.Trigger>
-                  <div tabIndex={0} className="p-2 rounded-xl md:rounded-lg text-default-500 hover:bg-default-100 transition-colors w-10 h-10 md:w-full md:h-auto mx-auto flex justify-center cursor-pointer items-center">
-                    <Avatar size="sm" className="bg-default-200">
+                  <div tabIndex={0} className="p-2 rounded-xl md:rounded-lg text-white/80 hover:bg-white/10 transition-colors w-10 h-10 md:w-full md:h-auto mx-auto flex justify-center cursor-pointer items-center">
+                    <Avatar size="sm" className="bg-white/20">
                       <Avatar.Fallback>
                         <UserIcon className="w-4 h-4" />
                       </Avatar.Fallback>
                     </Avatar>
                     {!isCollapsed && (
-                      <span className="hidden md:block ml-3 truncate text-sm">
+                      <span className="hidden md:block ml-3 truncate text-sm text-white/90">
                         Đăng nhập
                       </span>
                     )}
                   </div>
                 </Tooltip.Trigger>
                 {isCollapsed && (
-                  <Tooltip.Content placement="right" className="bg-surface text-foreground shadow-lg border border-default-200 font-medium px-3 py-1.5 rounded-lg text-sm ml-2">
+                  <Tooltip.Content placement="right" className="bg-overlay text-foreground shadow-lg border border-default-200 font-medium px-3 py-1.5 rounded-lg text-sm ml-2">
                     Đăng nhập
                   </Tooltip.Content>
                 )}
@@ -230,7 +259,7 @@ export function Sidebar() {
           )}
         <button
           onClick={() => setIsCollapsed(!isCollapsed)}
-          className="hidden md:flex p-2 rounded-lg text-default-500 hover:bg-default-100 transition-colors w-full justify-center items-center"
+          className="hidden md:flex p-2 rounded-lg text-white/60 hover:bg-white/10 hover:text-white/90 transition-colors w-full justify-center items-center"
           title={isCollapsed ? "Mở rộng (Expand)" : "Thu gọn (Collapse)"}
         >
           {isCollapsed ? (

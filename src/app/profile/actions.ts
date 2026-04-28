@@ -2,6 +2,20 @@
 
 import { createClient } from "@/lib/supabase/server";
 
+export async function updateDisplayName(displayName: string) {
+  const supabase = await createClient();
+
+  const { data, error } = await supabase.auth.updateUser({
+    data: { display_name: displayName, },
+  });
+
+  if (error || !data) {
+    return { success: false, error: "Lỗi cập nhật tên", };
+  }
+
+  return { success: true, };
+}
+
 export async function uploadAvatarAction(formData: FormData) {
   const file = formData.get("file") as File | null;
   if (!file) {
@@ -21,42 +35,27 @@ export async function uploadAvatarAction(formData: FormData) {
   }
 
   try {
-    const storagePath = `${user.id}/${file.name}`;
+    const filePath = `${user.id}/avatar`;
 
-    const { error: uploadError } = await supabase.storage
+    const { data: uploadData, error: uploadError } = await supabase.storage
       .from("avatars")
-      .upload(storagePath, file, {
+      .upload(filePath, file, {
         upsert: true,
       });
 
-    if (uploadError) {
-      throw uploadError;
+    if (uploadError || !uploadData) {
+      throw uploadError || new Error("Upload thất bại.");
     }
 
-    const { data: fileRecord, error: fileInsertError } = await supabase
-      .from("files")
-      .insert({
-        name: file.name,
-        uploaded_by: user.id,
-        mime_type: file.type,
-        bucket_name: "avatars",
-        path: `/${user.id}/`,
-      })
-      .select("id")
-      .single();
-
-    if (fileInsertError) {
-      await supabase.storage.from("avatars").remove([storagePath]);
-      throw fileInsertError;
-    }
-
-    const { error: profileError } = await supabase
+    const { error: dbError } = await supabase
       .from("profiles")
-      .update({ avatar: fileRecord.id })
+      .update({
+        avatar: uploadData.id,
+      })
       .eq("id", user.id);
 
-    if (profileError) {
-      throw profileError;
+    if (dbError) {
+      throw dbError;
     }
 
     return { success: true };

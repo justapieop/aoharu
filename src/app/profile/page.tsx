@@ -14,6 +14,13 @@ export default async function ProfilePage() {
   }
 
   const displayName = user.user_metadata?.display_name || user.email;
+  const { data: profile } = await supabase
+    .from("profiles")
+    .select("admin")
+    .eq("id", user.id)
+    .maybeSingle();
+
+  const isAdmin = profile?.admin === true;
 
   return (
     <Surface variant="default" className="flex flex-col md:flex-row h-screen w-full">
@@ -23,7 +30,14 @@ export default async function ProfilePage() {
           <Card.Header className="flex flex-row gap-4 items-center mb-4">
             <EditableAvatar userId={user.id} fallback={displayName?.charAt(0).toUpperCase() || "U"} />
             <div className="flex flex-col flex-1">
-              <Card.Title className="text-2xl font-bold">{displayName}</Card.Title>
+              <div className="flex items-center gap-2 flex-wrap">
+                <Card.Title className="text-2xl font-bold">{displayName}</Card.Title>
+                {isAdmin && (
+                  <span className="shrink-0 rounded-full bg-accent/10 border border-default-200 px-2.5 py-1 text-[11px] font-semibold text-accent">
+                    Quản trị viên
+                  </span>
+                )}
+              </div>
               <Card.Description className="text-default-500">{user.email}</Card.Description>
             </div>
           </Card.Header>
