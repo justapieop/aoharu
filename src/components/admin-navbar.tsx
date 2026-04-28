@@ -2,7 +2,7 @@ import Link from "next/link";
 import { Surface } from "@heroui/react";
 import { ShieldCheckIcon } from "@heroicons/react/24/outline";
 
-export type AdminNavbarActivePage = "dashboard" | "pins";
+export type AdminNavbarActivePage = "dashboard" | "pins" | "challenges";
 
 interface AdminNavbarProps {
   activePage: AdminNavbarActivePage;
@@ -49,6 +49,17 @@ export function AdminNavbar({ activePage, title, subtitle }: AdminNavbarProps) {
             aria-current={pinsActive ? "page" : undefined}
           >
             Marker
+          </Link>
+          <Link
+            href="/admin/challenges"
+            className={`rounded-lg px-3 py-2 text-sm transition-colors ${
+              activePage === "challenges"
+                ? "bg-white/15 font-semibold text-white"
+                : "font-medium text-white/80 hover:bg-white/10 hover:text-white"
+            }`}
+            aria-current={activePage === "challenges" ? "page" : undefined}
+          >
+            Thử thách
           </Link>
         </div>
       </div>

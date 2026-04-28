@@ -55,6 +55,26 @@ export default async function AdminPage() {
             </div>
           </div>
         </Surface>
+
+        <Surface variant="secondary" className="mt-4 rounded-xl border border-default-200 p-6">
+          <div className="flex items-start gap-3">
+            <div className="rounded-lg bg-orange-500/10 p-2 text-orange-500">
+              <ShieldCheckIcon className="h-5 w-5" />
+            </div>
+            <div className="flex-1">
+              <h2 className="text-lg font-semibold">Quản lý thử thách</h2>
+              <p className="mt-1 text-sm text-default-500">
+                Thêm, sửa, xóa các thử thách để khuyến khích cộng đồng tham gia hoạt động bảo vệ môi trường.
+              </p>
+              <Link
+                href="/admin/challenges"
+                className="mt-4 inline-flex items-center rounded-lg bg-orange-500 px-4 py-2 text-sm font-semibold text-white transition-opacity hover:opacity-90"
+              >
+                Đi đến quản lý thử thách
+              </Link>
+            </div>
+          </div>
+        </Surface>
       </main>
     </Surface>
   );

@@ -3,7 +3,8 @@
 import { Suspense } from "react"
 import { useSearchParams } from "next/navigation"
 import Link from "next/link"
-import { Card, TextField, Label, Input, Button, Alert } from "@heroui/react"
+import { TextField, Label, Input, Button, Alert } from "@heroui/react"
+import { SparklesIcon } from "@heroicons/react/24/outline"
 import { signup } from "../actions"
 
 function RegisterForm() {
@@ -11,75 +12,100 @@ function RegisterForm() {
   const error = searchParams.get("error")
 
   return (
-    <Card className="w-full max-w-sm shrink-0">
-      <Card.Header className="flex-col items-start px-6 pb-0 pt-6">
-        <Card.Title className="text-2xl font-bold text-foreground">Đăng ký mới</Card.Title>
-        <Card.Description className="text-default-500 text-sm">Tạo tài khoản để tham gia</Card.Description>
-      </Card.Header>
-      <Card.Content className="gap-4 px-6 py-6">
-        {error && (
-          <Alert status="danger" className="mb-4">
-            <Alert.Content>
-              <Alert.Title>{error}</Alert.Title>
-            </Alert.Content>
-          </Alert>
-        )}
-        
-        <form className="flex flex-col gap-4" action={signup}>
-          <TextField isRequired className="gap-1">
-            <Label htmlFor="name" className="font-medium text-sm">Tên</Label>
-            <Input
-              id="name"
-              name="name"
-              type="text"
-              placeholder="Nhập tên của bạn"
-            />
-          </TextField>
-          <TextField isRequired className="gap-1">
-            <Label htmlFor="email" className="font-medium text-sm">Email</Label>
-            <Input
-              id="email"
-              name="email"
-              type="email"
-              placeholder="Nhập email của bạn"
-            />
-          </TextField>
-          <TextField isRequired className="gap-1">
-            <Label htmlFor="password" className="font-medium text-sm">Mật khẩu</Label>
-            <Input
-              id="password"
-              name="password"
-              type="password"
-              placeholder="Nhập mật khẩu của bạn"
-            />
-          </TextField>
+    <div className="w-full">
+      <div className="mb-8 flex flex-col items-start">
+        <h1 className="text-3xl font-bold tracking-tight text-foreground">Đăng ký mới</h1>
+        <p className="mt-2 text-default-500">Tạo tài khoản để tham gia cộng đồng</p>
+      </div>
 
-          <Button
-            variant="primary"
-            type="submit"
-            className="w-full font-medium mt-2"
-          >
-            Đăng ký
-          </Button>
+      {error && (
+        <Alert status="danger" className="mb-6">
+          <Alert.Content>
+            <Alert.Title>{error}</Alert.Title>
+          </Alert.Content>
+        </Alert>
+      )}
+      
+      <form className="flex flex-col gap-5" action={signup}>
+        <TextField isRequired className="gap-1.5">
+          <Label htmlFor="name" className="font-medium text-sm">Tên hiển thị</Label>
+          <Input
+            id="name"
+            name="name"
+            type="text"
+            placeholder="Nhập tên của bạn"
+            className="h-12 bg-default-50"
+          />
+        </TextField>
+        <TextField isRequired className="gap-1.5">
+          <Label htmlFor="email" className="font-medium text-sm">Email</Label>
+          <Input
+            id="email"
+            name="email"
+            type="email"
+            placeholder="Nhập email của bạn"
+            className="h-12 bg-default-50"
+          />
+        </TextField>
+        <TextField isRequired className="gap-1.5">
+          <Label htmlFor="password" className="font-medium text-sm">Mật khẩu</Label>
+          <Input
+            id="password"
+            name="password"
+            type="password"
+            placeholder="Tạo mật khẩu an toàn"
+            className="h-12 bg-default-50"
+          />
+        </TextField>
 
-          <div className="text-center text-sm font-medium mt-4">
-            <span className="text-default-500">Đã có tài khoản? </span>
-            <Link href="/auth/login" className="text-accent hover:underline">
-              Đăng nhập
-            </Link>
-          </div>
-        </form>
-      </Card.Content>
-    </Card>
+        <Button
+          variant="primary"
+          type="submit"
+          className="mt-2 h-12 w-full text-base font-semibold shadow-md shadow-accent/20"
+        >
+          Đăng ký
+        </Button>
+
+        <div className="mt-6 text-center text-sm">
+          <span className="text-default-500">Đã có tài khoản? </span>
+          <Link href="/auth/login" className="font-semibold text-accent hover:underline">
+            Đăng nhập
+          </Link>
+        </div>
+      </form>
+    </div>
   )
 }
 
 export default function RegisterPage() {
   return (
-    <div className="flex h-full w-full items-center justify-center p-4">
-      <Suspense fallback={<div className="text-default-500">Đang tải...</div>}>
-        <RegisterForm />
-      </Suspense>
+    <div className="flex min-h-screen w-full bg-background">
+      <div className="flex w-full flex-col justify-center px-6 sm:px-12 lg:w-1/2 xl:px-24">
+        <div className="mx-auto w-full max-w-sm">
+          <div className="mb-12 flex items-center gap-2 text-accent">
+            <SparklesIcon className="h-8 w-8" />
+            <span className="text-2xl font-bold tracking-tight">Bản đồ xanh</span>
+          </div>
+          <Suspense fallback={<div className="text-default-500">Đang tải...</div>}>
+            <RegisterForm />
+          </Suspense>
+        </div>
+      </div>
+
+      <div className="hidden lg:flex lg:w-1/2 relative overflow-hidden bg-zinc-900">
+        <div className="absolute inset-0 bg-gradient-to-br from-accent/80 to-emerald-900/90 z-10 mix-blend-multiply" />
+        <img 
+          src="https://images.unsplash.com/photo-1542601906990-b4d3fb778b09?q=80&w=2000&auto=format&fit=crop" 
+          alt="Nature background" 
+          className="absolute inset-0 w-full h-full object-cover opacity-60" 
+        />
+        <div className="relative z-20 flex flex-col justify-center h-full p-24 text-white">
+          <h2 className="text-5xl font-extrabold tracking-tight mb-6">Trở thành thành viên<br/>Hôm nay</h2>
+          <p className="text-lg text-emerald-50/80 max-w-md leading-relaxed">
+            Hành trình nhỏ bé hôm nay sẽ tạo ra những thay đổi lớn cho thế giới ngày mai. Tham gia ngay và lan tỏa thông điệp bảo vệ môi trường!
+          </p>
+        </div>
+      </div>
     </div>
   )
 }

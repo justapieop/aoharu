@@ -145,9 +145,15 @@ export default function ScanPage() {
     <Surface variant="default" className="flex flex-col md:flex-row h-screen w-full">
       <Sidebar />
 
-      <div className="flex-1 h-full overflow-y-auto flex flex-col lg:flex-row text-foreground">
-        <main className={`flex-1 flex flex-col items-center px-3 py-6 pb-20 sm:pb-6 md:px-4 md:py-16 ${result ? "justify-start" : "justify-center"}`}>
-          <Chip variant="primary" color="accent" className="mb-3 sm:mb-5 shadow-lg shadow-green-900/40">
+      <div className="relative flex-1 h-full overflow-y-auto flex flex-col lg:flex-row text-foreground bg-background">
+        {/* Subtle background glow */}
+        <div className="pointer-events-none absolute inset-0 overflow-hidden">
+          <div className="absolute left-[-10%] top-[-10%] h-[50%] w-[50%] rounded-full bg-accent-soft-hover blur-[120px] mix-blend-multiply opacity-70" />
+          <div className="absolute right-[-10%] top-[20%] h-[40%] w-[40%] rounded-full bg-emerald-500/10 blur-[100px] mix-blend-multiply opacity-60" />
+        </div>
+
+        <main className={`relative z-10 flex-1 flex flex-col items-center px-4 py-8 pb-24 sm:pb-8 md:px-8 md:py-20 ${result ? "justify-start" : "justify-center"}`}>
+          <Chip variant="secondary" color="accent" className="mb-4 sm:mb-6 shadow-sm bg-accent/10 text-accent font-medium">
             <SparklesIcon className="w-4 h-4" />
             <Chip.Label>Công cụ AI</Chip.Label>
           </Chip>
@@ -176,7 +182,7 @@ export default function ScanPage() {
                   <ToggleButton
                     key={mode.id}
                     id={mode.id}
-                    className="flex items-center gap-1 sm:gap-1.5 rounded-full px-2.5 sm:px-4 py-1.5 sm:py-2 text-xs sm:text-sm font-medium text-default-500 transition-all whitespace-nowrap data-selected:bg-accent/10 data-selected:text-accent"
+                    className="flex items-center gap-1.5 sm:gap-2 rounded-full px-4 sm:px-5 py-2 sm:py-2.5 text-xs sm:text-sm font-medium text-default-500 transition-all whitespace-nowrap hover:bg-default-200/50 data-[selected=true]:bg-white data-[selected=true]:text-accent data-[selected=true]:shadow-sm"
                   >
                     {idx > 0 && <ToggleButtonGroup.Separator />}
                     <Icon className="w-4 h-4" />
@@ -187,8 +193,8 @@ export default function ScanPage() {
             </ToggleButtonGroup>
           </div>
 
-          <div className="mt-5 md:mt-8 flex flex-col items-center gap-1">
-            <Chip variant="secondary" color="accent">
+          <div className="mt-6 md:mt-10 flex flex-col items-center gap-2">
+            <Chip variant="secondary" color="accent" className="bg-accent/10 text-accent font-semibold px-2">
               <ActiveIcon className="w-4 h-4" />
               <Chip.Label>{active.label}</Chip.Label>
             </Chip>
@@ -241,11 +247,11 @@ export default function ScanPage() {
                 onDrop={handleDrop}
                 onDragOver={(e) => e.preventDefault()}
                 onClick={() => fileInputRef.current?.click()}
-                className="cursor-pointer border-2 border-dashed border-default-200 rounded-2xl transition-all hover:border-accent/50 hover:bg-accent/5"
+                className="group cursor-pointer border-2 border-dashed border-default-300 rounded-3xl bg-default-50/50 transition-all duration-300 hover:border-accent hover:bg-accent/5 hover:shadow-lg hover:shadow-accent/10"
               >
-                <div className="flex flex-col items-center gap-4 py-6 px-3 sm:gap-5 sm:py-10 sm:px-4">
-                  <div className="flex h-12 w-12 sm:h-16 sm:w-16 items-center justify-center rounded-xl sm:rounded-2xl bg-accent/10 border border-accent/20 text-accent">
-                    <PhotoIcon className="w-6 h-6 sm:w-8 sm:h-8" />
+                <div className="flex flex-col items-center gap-5 py-10 px-4 sm:gap-6 sm:py-14 sm:px-6">
+                  <div className="flex h-16 w-16 sm:h-20 sm:w-20 items-center justify-center rounded-2xl bg-white shadow-sm border border-default-200 text-accent transition-transform duration-300 group-hover:scale-110 group-hover:shadow-md group-hover:border-accent/30">
+                    <PhotoIcon className="w-8 h-8 sm:w-10 sm:h-10" />
                   </div>
                   <div className="text-center">
                     <p className="text-base font-bold">Nhấn để tải ảnh lên</p>
@@ -295,9 +301,9 @@ export default function ScanPage() {
         </main>
 
         {result && (
-          <aside className="w-full lg:w-120 lg:min-w-100 h-auto lg:h-full overflow-y-auto border-t lg:border-t-0 lg:border-l border-default-200 bg-default-50 p-4 sm:p-6">
-            <Card variant="secondary">
-              <Card.Header className="pb-2">
+          <aside className="relative z-20 w-full lg:w-120 lg:min-w-100 h-auto lg:h-full overflow-y-auto border-t lg:border-t-0 lg:border-l border-default-200/50 bg-white/60 backdrop-blur-xl p-4 sm:p-6 lg:p-8 shadow-2xl">
+            <Card variant="default" className="bg-white/80 border-default-200 shadow-sm rounded-2xl overflow-hidden">
+              <Card.Header className="pb-3 border-b border-default-100 bg-default-50/50">
                 <Card.Title className="flex items-center gap-2 text-base">
                   <SparklesIcon className="w-4 h-4 text-accent" />
                   Kết quả phân tích
