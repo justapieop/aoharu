@@ -222,7 +222,7 @@ export async function createPostAction(formData: FormData) {
       const uploadedAttachmentIds: string[] = [];
 
       for (const file of files) {
-        const filePath = `${post.id}/${crypto.randomUUID()}_${file.name}`;
+        const filePath = `posts/${post.id}/${crypto.randomUUID()}_${file.name}`;
 
         const { data: uploadData, error: uploadError } = await supabase.storage
           .from("assets")
