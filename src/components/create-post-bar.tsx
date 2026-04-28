@@ -73,18 +73,19 @@ export function CreatePostBar({ userId, displayName, avatarFallback }: CreatePos
   return (
     <Modal key={modalInstanceKey}>
       <Modal.Trigger className="w-full">
-        <Card className="w-full cursor-pointer border-2 border-default-300 transition-colors hover:border-default-400">
-          <Card.Content className="flex flex-row items-center gap-2 sm:gap-3 p-2 sm:p-3">
-            <Avatar size="sm" className="shrink-0">
-              <Avatar.Image src={avatarUrl} alt="Avatar" className="object-cover" />
-              <Avatar.Fallback>{avatarFallback}</Avatar.Fallback>
-            </Avatar>
-
-            <div className="flex-1 min-w-0 rounded-full bg-default-100 px-4 py-2 text-sm text-default-400 truncate">
-              {`Bạn đang nghĩ gì, ${displayName}?`}
-            </div>
-          </Card.Content>
-        </Card>
+        <div className="w-full cursor-pointer rounded-full bg-white shadow-sm border border-default-200 transition-all duration-300 hover:shadow-md hover:border-accent/30 flex flex-row items-center gap-3 p-2 sm:p-3 pr-4">
+          <Avatar size="sm" className="shrink-0 border border-default-100 shadow-sm">
+            <Avatar.Image src={avatarUrl} alt="Avatar" className="object-cover" />
+            <Avatar.Fallback>{avatarFallback}</Avatar.Fallback>
+          </Avatar>
+          <div className="flex-1 text-sm text-default-400 font-medium truncate">
+            {`Bạn đang nghĩ gì, ${displayName}?`}
+          </div>
+          <div className="hidden sm:flex items-center gap-1">
+            <div className="p-2 rounded-full hover:bg-default-100 transition-colors"><PhotoIcon className="w-5 h-5 text-success" /></div>
+            <div className="p-2 rounded-full hover:bg-default-100 transition-colors"><VideoCameraIcon className="w-5 h-5 text-danger" /></div>
+          </div>
+        </div>
       </Modal.Trigger>
 
       <Modal.Backdrop>
@@ -111,14 +112,14 @@ export function CreatePostBar({ userId, displayName, avatarFallback }: CreatePos
                 onChange={setPostContent}
               >
                 <InputGroup
-                  variant="secondary"
+                  variant="primary"
                   fullWidth
-                  className="rounded-xl border-2 border-default-200 bg-default-100 shadow-none"
+                  className="rounded-2xl border border-default-200 bg-default-50/50 shadow-inner"
                 >
                   <InputGroup.TextArea
                     placeholder={`Bạn đang nghĩ gì, ${displayName}?`}
-                    className="resize-none border-none bg-default-100 px-4 py-3 shadow-none text-lg min-h-40"
-                    rows={6}
+                    className="resize-none border-none bg-transparent px-4 py-3 shadow-none text-base md:text-lg min-h-32 placeholder:text-default-400 focus:ring-0"
+                    rows={5}
                   />
                 </InputGroup>
               </TextField>
@@ -142,33 +143,31 @@ export function CreatePostBar({ userId, displayName, avatarFallback }: CreatePos
             <Separator />
 
             <Modal.Footer className="flex flex-col gap-3 p-4">
-              <Card variant="secondary" className="shadow-none">
-                <Card.Content className="flex flex-row items-center justify-between p-3">
-                  <span className="text-sm font-medium">Thêm vào bài viết</span>
-                  <div className="flex items-center gap-1">
-                    <Button
-                      isIconOnly
-                      size="sm"
-                      variant="ghost"
-                      aria-label="Ảnh"
-                      className="text-success"
-                      onPress={() => handleFileSelect("image/*")}
-                    >
-                      <PhotoIcon className="w-5 h-5" />
-                    </Button>
-                    <Button
-                      isIconOnly
-                      size="sm"
-                      variant="ghost"
-                      aria-label="Video"
-                      className="text-danger"
-                      onPress={() => handleFileSelect("video/*")}
-                    >
-                      <VideoCameraIcon className="w-5 h-5" />
-                    </Button>
-                  </div>
-                </Card.Content>
-              </Card>
+              <div className="rounded-2xl border border-default-200 bg-default-50/50 px-4 py-3 flex flex-row items-center justify-between">
+                <span className="text-sm font-semibold text-default-700">Thêm vào bài viết</span>
+                <div className="flex items-center gap-1">
+                  <Button
+                    isIconOnly
+                    size="sm"
+                    variant="ghost"
+                    aria-label="Ảnh"
+                    className="text-success hover:bg-success/10"
+                    onPress={() => handleFileSelect("image/*")}
+                  >
+                    <PhotoIcon className="w-5 h-5" />
+                  </Button>
+                  <Button
+                    isIconOnly
+                    size="sm"
+                    variant="ghost"
+                    aria-label="Video"
+                    className="text-danger hover:bg-danger/10"
+                    onPress={() => handleFileSelect("video/*")}
+                  >
+                    <VideoCameraIcon className="w-5 h-5" />
+                  </Button>
+                </div>
+              </div>
 
               <Button
                 fullWidth

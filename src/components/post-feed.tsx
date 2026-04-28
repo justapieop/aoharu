@@ -199,15 +199,15 @@ export function PostCard({
   }
 
   return (
-    <Card className="w-full border-2 border-default-300">
-      <Card.Header className="flex flex-row items-center gap-3 p-4 pb-2">
-        <Avatar size="sm" className="shrink-0">
+    <Card className="w-full border border-default-200/60 shadow-sm hover:shadow-md transition-shadow duration-300 rounded-3xl bg-white overflow-hidden">
+      <Card.Header className="flex flex-row items-center gap-3 px-5 pt-5 pb-3">
+        <Avatar size="sm" className="shrink-0 border border-default-100 shadow-sm">
           <Avatar.Image src={post.author_avatar_url} alt="Avatar" className="object-cover" />
           <Avatar.Fallback>{post.author_fallback}</Avatar.Fallback>
         </Avatar>
         <div className="flex flex-col">
-          <span className="font-semibold text-sm">{post.author_name}</span>
-          <span className="text-xs text-default-400">{timeAgo(post.created_at)}</span>
+          <span className="font-bold text-sm text-foreground">{post.author_name}</span>
+          <span className="text-xs text-default-400 font-medium">{timeAgo(post.created_at)}</span>
         </div>
         {canDelete && (
           <Button
@@ -218,15 +218,15 @@ export function PostCard({
             isDisabled={isDeletePending}
             isPending={isDeletePending}
             onPress={handleDeletePost}
-            className="ml-auto text-danger"
+            className="ml-auto text-default-400 hover:text-danger hover:bg-danger/10"
           >
             <TrashIcon className="w-4 h-4" />
           </Button>
         )}
       </Card.Header>
 
-      <Card.Content className="px-4 py-2">
-        <p className="text-sm whitespace-pre-wrap">{post.content}</p>
+      <Card.Content className="px-5 py-2">
+        <p className="text-[15px] leading-relaxed whitespace-pre-wrap text-default-700">{post.content}</p>
       </Card.Content>
 
       {post.attachments.length > 0 && (
@@ -253,39 +253,41 @@ export function PostCard({
         </div>
       )}
 
-      <Separator />
+      <Separator className="opacity-50" />
 
-      <Card.Footer className="flex flex-row items-center gap-2 px-4 py-2">
-        <ToggleButton
-          isIconOnly
-          variant="ghost"
-          size="sm"
-          aria-label="Like"
-          isSelected={optimistic.liked}
-          isDisabled={isPending}
-          onPress={handleToggle}
-          className="data-[selected=true]:text-danger"
-        >
-          {optimistic.liked ? (
-            <HeartSolid className="w-5 h-5" />
-          ) : (
-            <HeartOutline className="w-5 h-5" />
+      <Card.Footer className="flex flex-row items-center gap-4 px-5 py-3 bg-default-50/30">
+        <div className="flex items-center">
+          <ToggleButton
+            isIconOnly
+            variant="ghost"
+            size="sm"
+            aria-label="Like"
+            isSelected={optimistic.liked}
+            isDisabled={isPending}
+            onPress={handleToggle}
+            className="rounded-full hover:bg-danger/10 data-[selected=true]:text-danger transition-transform active:scale-95"
+          >
+            {optimistic.liked ? (
+              <HeartSolid className="w-5 h-5" />
+            ) : (
+              <HeartOutline className="w-5 h-5 text-default-500" />
+            )}
+          </ToggleButton>
+          {optimistic.count > 0 && (
+            <span className="text-sm font-medium text-default-500 ml-1.5">{optimistic.count}</span>
           )}
-        </ToggleButton>
-        {optimistic.count > 0 && (
-          <span className="text-xs text-default-500">{optimistic.count}</span>
-        )}
+        </div>
 
         <Modal>
           <Modal.Trigger>
             <Button
-              isIconOnly
               variant="ghost"
               size="sm"
               aria-label="Comment"
-              className="text-default-500"
+              className="rounded-full hover:bg-accent/10 text-default-500 hover:text-accent font-medium px-3"
             >
-              <CommentIcon className="w-5 h-5" />
+              <CommentIcon className="w-5 h-5 mr-1" />
+              <span>Bình luận</span>
             </Button>
           </Modal.Trigger>
 
@@ -342,53 +344,55 @@ export function PostCard({
                     <div className="p-4 md:p-5 flex flex-col min-h-72">
                       <div className="text-sm font-semibold mb-3">Bình luận</div>
 
-                      <div className="flex-1 overflow-y-auto rounded-lg bg-default-50 p-3">
+                      <div className="flex-1 overflow-y-auto rounded-2xl bg-default-50 p-4 border border-default-100 shadow-inner">
                         {comments.length === 0 ? (
-                          <p className="text-sm text-default-500">Chưa có bình luận nào.</p>
+                          <p className="text-sm text-default-500 text-center mt-4">Chưa có bình luận nào. Hãy là người đầu tiên!</p>
                         ) : (
-                          <div className="flex flex-col gap-3">
+                          <div className="flex flex-col gap-4">
                             {comments.map((comment) => (
-                              <div key={comment.id} className="flex items-start gap-2">
-                                <Avatar size="sm" className="shrink-0">
+                              <div key={comment.id} className="flex items-start gap-3">
+                                <Avatar size="sm" className="shrink-0 mt-0.5 shadow-sm">
                                   <Avatar.Image src={comment.author_avatar_url} alt="Avatar" className="object-cover" />
                                   <Avatar.Fallback>{comment.author_fallback}</Avatar.Fallback>
                                 </Avatar>
-                                <div className="rounded-xl bg-default-100 px-3 py-2">
-                                  <div className="mb-0.5 flex items-center gap-2">
-                                    <p className="text-xs font-semibold">{comment.author_name}</p>
-                                    {comment.commented_by === currentUserId && (
-                                      <Button
-                                        isIconOnly
-                                        size="sm"
-                                        variant="ghost"
-                                        aria-label="Xóa bình luận"
-                                        isPending={!!deletingCommentIds[comment.id]}
-                                        isDisabled={!!deletingCommentIds[comment.id]}
-                                        onPress={() => handleDeleteComment(comment.id)}
-                                        className="ml-auto h-6 w-6 min-w-6 text-danger"
-                                      >
-                                        <TrashIcon className="w-3.5 h-3.5" />
-                                      </Button>
+                                <div className="flex flex-col max-w-[85%]">
+                                  <div className="rounded-2xl bg-white border border-default-200 px-4 py-2.5 shadow-sm">
+                                    <div className="mb-1 flex items-center justify-between gap-2">
+                                      <p className="text-[13px] font-bold text-foreground">{comment.author_name}</p>
+                                      {comment.commented_by === currentUserId && (
+                                        <Button
+                                          isIconOnly
+                                          size="sm"
+                                          variant="ghost"
+                                          aria-label="Xóa bình luận"
+                                          isPending={!!deletingCommentIds[comment.id]}
+                                          isDisabled={!!deletingCommentIds[comment.id]}
+                                          onPress={() => handleDeleteComment(comment.id)}
+                                          className="h-6 w-6 min-w-6 text-default-400 hover:text-danger hover:bg-danger/10 rounded-full"
+                                        >
+                                          <TrashIcon className="w-3.5 h-3.5" />
+                                        </Button>
+                                      )}
+                                    </div>
+
+                                    {comment.content.trim().length > 0 && (
+                                      <p className="text-sm leading-relaxed whitespace-pre-wrap text-default-700">{comment.content}</p>
                                     )}
                                   </div>
 
-                                  {comment.content.trim().length > 0 && (
-                                    <p className="text-sm whitespace-pre-wrap">{comment.content}</p>
-                                  )}
-
                                   {comment.attachment && (
-                                    <div className="mt-2 overflow-hidden rounded-lg bg-default-200">
+                                    <div className="mt-2 overflow-hidden rounded-xl bg-default-200 border border-default-200 shadow-sm max-w-sm">
                                       {comment.attachment.type.startsWith("video/") ? (
                                         <video
                                           src={comment.attachment.url}
                                           controls
-                                          className="w-full max-h-72 object-cover"
+                                          className="w-full max-h-60 object-cover"
                                         />
                                       ) : (
                                         <img
                                           src={comment.attachment.url}
                                           alt={comment.attachment.name}
-                                          className="w-full max-h-72 object-cover"
+                                          className="w-full max-h-60 object-cover"
                                         />
                                       )}
                                     </div>
