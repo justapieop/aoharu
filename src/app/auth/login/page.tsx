@@ -51,7 +51,7 @@ function LoginForm() {
         <Button
           variant="primary"
           type="submit"
-          className="mt-2 h-12 w-full text-base font-semibold shadow-md shadow-accent/20"
+          className="mt-2 h-12 w-full text-base font-semibold shadow-md shadow-accent-soft-hover"
         >
           Đăng nhập
         </Button>
@@ -83,7 +83,7 @@ export default function LoginPage() {
       </div>
 
       <div className="hidden lg:flex lg:w-1/2 relative overflow-hidden bg-zinc-900">
-        <div className="absolute inset-0 bg-gradient-to-br from-accent/80 to-emerald-900/90 z-10 mix-blend-multiply" />
+        <div className="absolute inset-0 bg-linear-to-br from-accent/80 to-emerald-900/90 z-10 mix-blend-multiply" />
         <img 
           src="https://images.unsplash.com/photo-1518531933037-91b2f5f229cc?q=80&w=2000&auto=format&fit=crop" 
           alt="Nature background" 

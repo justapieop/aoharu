@@ -45,5 +45,5 @@ export async function signup(formData: FormData) {
   }
 
   revalidatePath("/", "layout");
-  redirect("/auth/login?message=Check your email to continue sign in process");
+  redirect("/auth/login?error=Check your email to continue sign in process");
 }
