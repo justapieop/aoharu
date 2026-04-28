@@ -2,7 +2,7 @@ import Link from "next/link";
 import { Surface } from "@heroui/react";
 import { ShieldCheckIcon } from "@heroicons/react/24/outline";
 
-export type AdminNavbarActivePage = "dashboard" | "pins" | "challenges";
+export type AdminNavbarActivePage = "dashboard" | "pins" | "challenges" | "articles";
 
 interface AdminNavbarProps {
   activePage: AdminNavbarActivePage;
@@ -13,6 +13,8 @@ interface AdminNavbarProps {
 export function AdminNavbar({ activePage, title, subtitle }: AdminNavbarProps) {
   const dashboardActive = activePage === "dashboard";
   const pinsActive = activePage === "pins";
+  const challengesActive = activePage === "challenges";
+  const articlesActive = activePage === "articles";
 
   return (
     <Surface variant="default" className="sticky top-0 z-40 w-full rounded-none border-b border-white/15 bg-accent text-white shadow-md">
@@ -53,13 +55,24 @@ export function AdminNavbar({ activePage, title, subtitle }: AdminNavbarProps) {
           <Link
             href="/admin/challenges"
             className={`rounded-lg px-3 py-2 text-sm transition-colors ${
-              activePage === "challenges"
+              challengesActive
                 ? "bg-white/15 font-semibold text-white"
                 : "font-medium text-white/80 hover:bg-white/10 hover:text-white"
             }`}
-            aria-current={activePage === "challenges" ? "page" : undefined}
+            aria-current={challengesActive ? "page" : undefined}
           >
             Thử thách
+          </Link>
+          <Link
+            href="/admin/articles"
+            className={`rounded-lg px-3 py-2 text-sm transition-colors ${
+              articlesActive
+                ? "bg-white/15 font-semibold text-white"
+                : "font-medium text-white/80 hover:bg-white/10 hover:text-white"
+            }`}
+            aria-current={articlesActive ? "page" : undefined}
+          >
+            Bài viết
           </Link>
         </div>
       </div>
