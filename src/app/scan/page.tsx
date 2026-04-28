@@ -148,12 +148,12 @@ export default function ScanPage() {
       <div className="relative flex-1 h-full overflow-y-auto flex flex-col lg:flex-row text-foreground bg-background">
         {/* Subtle background glow */}
         <div className="pointer-events-none absolute inset-0 overflow-hidden">
-          <div className="absolute -left-[10%] -top-[10%] h-[50%] w-[50%] rounded-full bg-accent/20 blur-[120px] mix-blend-multiply opacity-70" />
-          <div className="absolute -right-[10%] top-[20%] h-[40%] w-[40%] rounded-full bg-emerald-500/10 blur-[100px] mix-blend-multiply opacity-60" />
+          <div className="absolute left-[-10%] top-[-10%] h-[50%] w-[50%] rounded-full bg-accent-soft-hover blur-[120px] mix-blend-multiply opacity-70" />
+          <div className="absolute right-[-10%] top-[20%] h-[40%] w-[40%] rounded-full bg-emerald-500/10 blur-[100px] mix-blend-multiply opacity-60" />
         </div>
 
         <main className={`relative z-10 flex-1 flex flex-col items-center px-4 py-8 pb-24 sm:pb-8 md:px-8 md:py-20 ${result ? "justify-start" : "justify-center"}`}>
-          <Chip variant="flat" color="primary" className="mb-4 sm:mb-6 shadow-sm bg-accent/10 text-accent font-medium">
+          <Chip variant="secondary" color="accent" className="mb-4 sm:mb-6 shadow-sm bg-accent/10 text-accent font-medium">
             <SparklesIcon className="w-4 h-4" />
             <Chip.Label>Công cụ AI</Chip.Label>
           </Chip>
@@ -194,7 +194,7 @@ export default function ScanPage() {
           </div>
 
           <div className="mt-6 md:mt-10 flex flex-col items-center gap-2">
-            <Chip variant="flat" color="primary" className="bg-accent/10 text-accent font-semibold px-2">
+            <Chip variant="secondary" color="accent" className="bg-accent/10 text-accent font-semibold px-2">
               <ActiveIcon className="w-4 h-4" />
               <Chip.Label>{active.label}</Chip.Label>
             </Chip>
