@@ -5,7 +5,7 @@ import Map, { Marker, NavigationControl } from "react-map-gl/maplibre";
 import maplibregl from "maplibre-gl";
 import "maplibre-gl/dist/maplibre-gl.css";
 
-export default function VietmapComponent() {
+export default function VietmapComponent({ pins = [] }: { pins?: any[] }) {
   // Use a fallback key or empty string if not defined yet
   const apiKey = process.env.NEXT_PUBLIC_VIETMAP_API_KEY || "";
   
@@ -38,14 +38,33 @@ export default function VietmapComponent() {
       >
         <NavigationControl position="top-right" />
         
-        <Marker longitude={105.8521} latitude={21.0227} anchor="bottom">
-          <div className="flex flex-col items-center cursor-pointer transform hover:scale-110 transition-transform">
-            <span className="text-3xl drop-shadow-md">🌳</span>
-            <div className="bg-emerald-600 text-white text-[10px] px-2 py-0.5 rounded-full font-bold mt-1 shadow-md">
-              Khu vực xanh
-            </div>
-          </div>
-        </Marker>
+        {pins.map((pin) => {
+          const pinType = Array.isArray(pin.pin_types) ? pin.pin_types[0] : pin.pin_types;
+          const icon = pinType?.icon || "📍";
+          const name = pin.name || "Khu vực xanh";
+          let lat = pin.lat;
+          let long = pin.long;
+          
+          // Auto-correct if the user accidentally swapped lat and long in the database
+          if (Math.abs(lat) > 90 && Math.abs(long) <= 90) {
+            lat = pin.long;
+            long = pin.lat;
+          }
+
+          // Safety check to prevent crashing the whole map
+          if (Math.abs(lat) > 90 || Math.abs(long) > 180) return null;
+
+          return (
+            <Marker key={pin.id} longitude={long} latitude={lat} anchor="bottom">
+              <div className="flex flex-col items-center cursor-pointer transform hover:scale-110 transition-transform">
+                <span className="text-3xl drop-shadow-md">{icon}</span>
+                <div className="bg-emerald-600 text-white text-[10px] px-2 py-0.5 rounded-full font-bold mt-1 shadow-md whitespace-nowrap max-w-[120px] truncate">
+                  {name}
+                </div>
+              </div>
+            </Marker>
+          );
+        })}
       </Map>
     </div>
   );
