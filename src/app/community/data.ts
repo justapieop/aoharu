@@ -83,29 +83,51 @@ export async function fetchCommunityPostsPageForUser(
 
       const attachmentIdSet = new Set((attachmentRows ?? []).map((row) => row.attachment_id));
 
-      const { data: files } = await supabase.storage
-        .from("assets")
-        .list(post.id);
+      // Posts created after the storage-path fix live at `${post.id}/...`,
+      // while older ones live at `posts/${post.id}/...`. Look in both folders
+      // and rely on the attachment_id set to filter to the right files.
+      const candidateFolders = [post.id, `posts/${post.id}`];
+      const matchedAttachmentIds = new Set<string>();
 
-      if (files && files.length > 0) {
+      for (const folder of candidateFolders) {
+        if (matchedAttachmentIds.size === attachmentIdSet.size) {
+          break;
+        }
+
+        const { data: files } = await supabase.storage
+          .from("assets")
+          // `list()` defaults to 100 items; bump it so a post with many
+          // attachments doesn't silently drop the tail.
+          .list(folder, { limit: 1000, sortBy: { column: "name", order: "asc" } });
+
+        if (!files || files.length === 0) {
+          continue;
+        }
+
         for (const file of files) {
-          if (!file.id || !attachmentIdSet.has(file.id)) {
+          if (!file.id || !attachmentIdSet.has(file.id) || matchedAttachmentIds.has(file.id)) {
             continue;
           }
 
-          const { data: signedData } = await supabase.storage
+          const { data: publicData } = supabase.storage
             .from("assets")
-            .createSignedUrl(`${post.id}/${file.name}`, 3600);
+            .getPublicUrl(`${folder}/${file.name}`);
 
-          if (signedData?.signedUrl) {
+          if (publicData?.publicUrl) {
             attachments.push({
-              url: signedData.signedUrl,
+              url: publicData.publicUrl,
               name: file.name,
               type: file.metadata?.mimetype || "image/jpeg",
             });
+            matchedAttachmentIds.add(file.id);
           }
         }
       }
+
+      // Stable, deterministic order across requests so the gallery doesn't
+      // shuffle. Filenames are `${uuid}_${original}`, so name-based sort is
+      // effectively arbitrary but at least consistent.
+      attachments.sort((a, b) => a.name.localeCompare(b.name));
 
       const { data: reactionRows } = await supabase
         .from("post_reactions")
@@ -143,14 +165,14 @@ export async function fetchCommunityPostsPageForUser(
             if (matchedFile) {
               const commentAttachmentPath = `${post.id}/comments/${comment.id}/${matchedFile.name}`;
 
-              const { data: signedData } = await supabase.storage
+              const { data: publicData } = supabase.storage
                 .from("assets")
-                .createSignedUrl(commentAttachmentPath, 3600);
+                .getPublicUrl(commentAttachmentPath);
 
-              if (signedData?.signedUrl) {
+              if (publicData?.publicUrl) {
                 commentAttachment = {
                   id: comment.attachment_id,
-                  url: signedData.signedUrl,
+                  url: publicData.publicUrl,
                   name: matchedFile.name,
                   type: matchedFile.metadata?.mimetype || "image/jpeg",
                 };
