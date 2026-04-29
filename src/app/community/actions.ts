@@ -148,13 +148,13 @@ export async function createCommentAction(postId: string, formData: FormData) {
       };
     }
 
-    const { data: signedData } = await supabase.storage
+    const { data: publicData } = supabase.storage
       .from("assets")
-      .createSignedUrl(attachmentPath, 3600);
+      .getPublicUrl(attachmentPath);
 
     commentAttachment = {
       id: uploadData.id,
-      url: signedData?.signedUrl || "",
+      url: publicData?.publicUrl || "",
       name: attachmentFile.name,
       type: attachmentFile.type,
     };
@@ -222,7 +222,7 @@ export async function createPostAction(formData: FormData) {
       const uploadedAttachmentIds: string[] = [];
 
       for (const file of files) {
-        const filePath = `posts/${post.id}/${crypto.randomUUID()}_${file.name}`;
+        const filePath = `${post.id}/${crypto.randomUUID()}_${file.name}`;
 
         const { data: uploadData, error: uploadError } = await supabase.storage
           .from("assets")
