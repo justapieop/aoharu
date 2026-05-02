@@ -64,6 +64,7 @@ export default function ScanPage() {
   const [result, setResult] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
+  const cameraInputRef = useRef<HTMLInputElement>(null);
 
   const active = MODES.find((m) => m.id === selectedMode)!;
   const ActiveIcon = active.icon;
@@ -142,17 +143,23 @@ export default function ScanPage() {
   };
 
   return (
-    <Surface variant="default" className="flex flex-col md:flex-row h-screen w-full">
+    <Surface variant="default" className="flex flex-col md:flex-row h-dvh min-h-0 w-full">
       <Sidebar />
 
-      <div className="relative flex-1 h-full overflow-y-auto flex flex-col lg:flex-row text-foreground bg-background">
+      <div className="relative flex-1 h-full min-h-0 overflow-y-auto overflow-x-hidden flex flex-col lg:flex-row text-foreground bg-background">
         {/* Subtle background glow */}
         <div className="pointer-events-none absolute inset-0 overflow-hidden">
           <div className="absolute left-[-10%] top-[-10%] h-[50%] w-[50%] rounded-full bg-accent-soft-hover blur-[120px] mix-blend-multiply opacity-70" />
           <div className="absolute right-[-10%] top-[20%] h-[40%] w-[40%] rounded-full bg-emerald-500/10 blur-[100px] mix-blend-multiply opacity-60" />
         </div>
 
-        <main className={`relative z-10 flex-1 flex flex-col items-center px-4 py-8 pb-24 sm:pb-8 md:px-8 md:py-20 ${result ? "justify-start" : "justify-center"}`}>
+        <main
+          className={`relative z-10 w-full min-w-0 flex flex-col items-center px-4 py-8 pb-24 sm:pb-8 md:px-8 md:py-20 ${
+            result
+              ? "justify-start max-lg:flex-none lg:flex-1 lg:min-h-0 lg:overflow-y-auto"
+              : "flex-1 min-h-0 justify-center"
+          }`}
+        >
           <Chip variant="secondary" color="accent" className="mb-4 sm:mb-6 shadow-sm bg-accent/10 text-accent font-medium">
             <SparklesIcon className="w-4 h-4" />
             <Chip.Label>Công cụ AI</Chip.Label>
@@ -259,11 +266,15 @@ export default function ScanPage() {
                       {active.description} &mdash; tối đa 10MB
                     </p>
                   </div>
-                  <div className="flex gap-3">
+                  <div
+                    className="flex gap-3"
+                    onClick={(e) => e.stopPropagation()}
+                    onPointerDown={(e) => e.stopPropagation()}
+                  >
                     <Button
                       size="sm"
                       variant="outline"
-                      onPress={(e) => { e.continuePropagation(); fileInputRef.current?.click(); }}
+                      onPress={() => cameraInputRef.current?.click()}
                     >
                       <CameraIcon className="w-4 h-4" />
                       Chụp ảnh
@@ -271,7 +282,7 @@ export default function ScanPage() {
                     <Button
                       size="sm"
                       variant="outline"
-                      onPress={(e) => { e.continuePropagation(); fileInputRef.current?.click(); }}
+                      onPress={() => fileInputRef.current?.click()}
                     >
                       <ArrowUpTrayIcon className="w-4 h-4" />
                       Tải lên
@@ -298,19 +309,27 @@ export default function ScanPage() {
             className="hidden"
             onChange={handleInputChange}
           />
+          <input
+            ref={cameraInputRef}
+            type="file"
+            accept="image/*"
+            capture="environment"
+            className="hidden"
+            onChange={handleInputChange}
+          />
         </main>
 
         {result && (
-          <aside className="relative z-20 w-full lg:w-120 lg:min-w-100 h-auto lg:h-full overflow-y-auto border-t lg:border-t-0 lg:border-l border-default-200/50 bg-white/60 backdrop-blur-xl p-4 sm:p-6 lg:p-8 shadow-2xl">
+          <aside className="relative z-20 w-full min-w-0 shrink-0 max-lg:rounded-t-3xl max-lg:border-t lg:w-120 lg:min-w-100 lg:shrink-0 h-auto max-lg:max-h-[min(70dvh,28rem)] lg:max-h-none lg:h-full overflow-y-auto overscroll-y-contain border-t lg:border-t-0 lg:border-l border-default-200/50 bg-white/60 backdrop-blur-xl p-4 pb-[max(1rem,env(safe-area-inset-bottom))] sm:p-6 sm:pb-[max(1.5rem,env(safe-area-inset-bottom))] lg:p-8 lg:pb-8 shadow-2xl">
             <Card variant="default" className="bg-white/80 border-default-200 shadow-sm rounded-2xl overflow-hidden">
               <Card.Header className="pb-3 border-b border-default-100 bg-default-50/50">
                 <Card.Title className="flex items-center gap-2 text-base">
-                  <SparklesIcon className="w-4 h-4 text-accent" />
+                  <SparklesIcon className="w-4 h-4 text-accent shrink-0" />
                   Kết quả phân tích
                 </Card.Title>
               </Card.Header>
-              <Card.Content className="pt-0">
-                <div className="text-sm text-default-700 leading-relaxed prose prose-sm max-w-none">
+              <Card.Content className="pt-0 px-4 sm:px-6">
+                <div className="text-sm text-default-700 leading-relaxed prose prose-sm max-w-none min-w-0 break-words [overflow-wrap:anywhere] prose-pre:overflow-x-auto prose-table:block prose-table:overflow-x-auto prose-table:max-w-full prose-img:max-w-full prose-img:h-auto">
                   <ReactMarkdown remarkPlugins={[remarkGfm]}>
                     {result}
                   </ReactMarkdown>
